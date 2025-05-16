@@ -1,19 +1,13 @@
 #pragma once
 #include <string>
-#include "PolygonalMesh.hpp"
+#include "PolyhedronMesh.hpp"
 
-bool loadCell0Ds(const std::string& filename, std::vector<Cell0D>& cells);
+void exportCell0Ds (const vector<vertex>& vertices, const string& filename = "cell0Ds.txt");
 
-bool loadCell1Ds(const std::string& filename, std::vector<Cell1D>& cells);
+void exportCell1Ds (const vector<edge>& edges, const string& filename = "cell1Ds.txt");
 
-bool loadCell2Ds(const std::string& filename, std::vector<Cell2D>& cells);
+void exportCell2Ds (const vector<face>& faces, const string& filename = "cell2Ds.txt");
 
-bool loadPolygonalMesh(const std::string& folderPath, PolygonalMesh& mesh);
+void exportCell3Ds (const vector<polyhedron>& polyhedra, const string& filename = "cell3Ds.txt");
 
-double computeDistance(const Cell0D& a, const Cell0D& b);
 
-double computeArea(const std::vector<Cell0D>& points);
-
-bool checkMeshValidity(const PolygonalMesh& mesh);
-
-bool compareMeshes(const PolygonalMesh& a, const PolygonalMesh& b);
