@@ -11,11 +11,7 @@ struct vertex {
 	int id;
 	double x, y, z;
 	int ShortPath =0;				//controllare se int o bool
-	void normalize() 
-	{
-        double length = sqrt(x*x + y*y + z*z);
-        x /= length; y /= length; z /= length;
-    };
+	
 }
 
 struct edge {
@@ -38,5 +34,4 @@ struct polyhedron {
 	vector<int> edge_ids;
 	vector>int> face_ids;
 }
-
 }
