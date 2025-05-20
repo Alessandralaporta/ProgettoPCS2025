@@ -11,7 +11,7 @@ void exportCell2Ds(const std::vector<face>& faces, const std::string& filename =
 
 void exportCell3Ds(const std::vector<polyhedron>& polyhedra, const std::string& filename = "cell3Ds.txt");
 
-void normalize(Vertex& v);
+void normalize(vertex& v);
 
 void buildTetrahedron(std::vector<vertex>& vertices, std::vector<edge>& edges, std::vector<face>& faces, polyhedron& polyhedron);
 
