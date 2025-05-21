@@ -343,18 +343,18 @@ double distance(const vertex& a, const vertex &b) {
 
 void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId, int endId) {
     int N = vertices.size();
-    std::vector<double> dist(N, std::numeric_limits<double>::infinity());
-    std::vector<int> prev(N, -1);
-    std::vector<bool> visited(N, false);
+    vector<double> dist(N, std::numeric_limits<double>::infinity());
+    vector<int> prev(N, -1);
+    vector<bool> visited(N, false);
 
     dist[startId] = 0.0;
 
-    using P = std::pair<double, int>;
-    std::priority_queue<P, std::vector<P>, std::greater<P>> pq;
+    using P = pair<double, int>;
+    priority_queue<P, std::vector<P>, std::greater<P>> pq;
     pq.push({0.0, startId});
 
     // Costruzione grafo come lista adiacenza
-    std::vector<std::vector<std::pair<int, double>>> adj(N);
+    vector<vector<spair<int, double>>> adj(N);
     for (const auto& e : edges) {
         double len = e.length > 0 ? e.length : distance(vertices[e.origin], vertices[e.end]);
         adj[e.origin].emplace_back(e.end, len);
@@ -382,10 +382,10 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
     }
 
     // Ricostruzione cammino
-    std::vector<int> path;
+    vector<int> path;
     for (int at = endId; at != -1; at = prev[at])
         path.push_back(at);
-    std::reverse(path.begin(), path.end());
+    reverse(path.begin(), path.end());
 
     // Reset ShortPath
     for (auto& v : vertices) v.ShortPath = 0;
