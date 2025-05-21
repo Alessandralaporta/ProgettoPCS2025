@@ -9,7 +9,7 @@ namespace PolyhedronMesh {
 struct vertex {
 	int id;
 	double x, y, z;
-	int ShortPath =0;				//controllare se int o bool
+	int ShortPath =0;
 };
 
 struct edge {
@@ -17,7 +17,7 @@ struct edge {
 	int origin;
 	int end;
 	double length = 0.0;
-	int ShortPath = 0;				//controllare se int o bool
+	int ShortPath = 0;
 };
 
 struct face {

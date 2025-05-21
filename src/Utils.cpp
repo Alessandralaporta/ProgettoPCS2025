@@ -3,72 +3,15 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include "PolyhedronMesh.hpp"
 
 using namespace std;
+using namespace PolyhedronMesh;
 
 //ordinare in cell2Ds
+//tipo di polyhedron
 
-void exportCell0Ds (const vector<vertex>& vertices, const string& filename = "cell0Ds.txt") {
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell0Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &v : vertices){
-		file << v.id << " " << v.x << " " << v.y << " " << v.z << " " << v.shortPath << endl;		
-	}
-	file.close();
-}
 
-void exportCell1Ds (const vector<edge>& edges, const string& filename = "cell1Ds.txt")
-{
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell1Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &e : edges){
-		file << e.id << " " << e.origin << " " << e.end << endl;		
-	}
-	file.close();
-}
-
-void exportCell2Ds (const vector<face>& faces, const string& filename = "cell2Ds.txt")
-{
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell2Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &f : faces) {
-        file << f.id << " " << f.vertex_ids.size() << " " << f.edge_ids.size() << " ";
-        for (auto v : f.vertex_ids) file << v << " ";
-        for (auto e : f.edge_ids) file << e << " ";
-        file << endl;
-	}
-	file.close();
-}
-
-void exportCell3Ds (const vector<polyhedron>& polyhedra, const string& filename = "cell3Ds.txt")
-{
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell3Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &p : polyhedra) {
-        file << p.id << " " << p.vertex_ids.size() << " " << p.edge_ids.size() << " " << p.face_ids.size() << " ";
-        for (auto v : p.vertex_ids) file << v << " ";
-        for (auto e : p.edge_ids) file << e << " ";
-        for (auto f : p.face_ids) file << f << " ";
-        file << endl;
-    }
-	file.close();
-}
 
 void normalize(vertex &v) {
     double norm = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -338,9 +281,8 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 		polyhedron.face_ids.push_back(i);
 	}
 }
-}
 
-void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, std::vector<edge> &edges, std::vector<face> &faces, Polyhedron &polyhedron) {
+void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, std::vector<edge> &edges, std::vector<face> &faces, polyhedron &polyhedron) {
 	if (p < 3 || q < 3) {
 		cout << "Valori non validi" << endl;
 	}
@@ -376,15 +318,78 @@ void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, 
 		buildIcosahedron(vertices, edges, faces, polyhedron);
 		return;
 	}
+
+}
 	
-	//bool isFaceConsistent(const Face& face, const std::vector<Edge>& edges) {
-    //for (int i = 0; i < face.edge_ids.size(); ++i) {
-        //int current = face.edge_ids[i];
-        //int next = face.edge_ids[(i + 1) % face.edge_ids.size()];
-        //if (edges[current].end != edges[next].origin)
-            //return false; 
-    //}
-    //return true;
+bool isFaceConsistent(const face& face, const std::vector<edge>& edges) {
+    for (int i = 0; i < face.edge_ids.size(); ++i) {
+        int current = face.edge_ids[i];
+        int next = face.edge_ids[(i + 1) % face.edge_ids.size()];
+        if (edges[current].end != edges[next].origin)
+            return false; 
+    }
+    return true;
+
 }
 
-//tipo di polyhedron
+void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell0Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &v : vertices){
+		file << v.id << " " << v.x << " " << v.y << " " << v.z << " " << v.ShortPath << endl;		
+	}
+	file.close();
+}
+
+void exportCell1Ds (const vector<edge>& edges, const string& filename = "cell1Ds.txt")
+{
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell1Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &e : edges){
+		file << e.id << " " << e.origin << " " << e.end << endl;		
+	}
+	file.close();
+}
+
+void exportCell2Ds (const vector<face>& faces, const string& filename = "cell2Ds.txt")
+{
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell2Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &f : faces) {
+        file << f.id << " " << f.vertex_ids.size() << " " << f.edge_ids.size() << " ";
+        for (auto v : f.vertex_ids) file << v << " ";
+        for (auto e : f.edge_ids) file << e << " ";
+        file << endl;
+	}
+	file.close();
+}
+
+void exportCell3Ds (const vector<polyhedron>& polyhedra, const string& filename = "cell3Ds.txt")
+{
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell3Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &p : polyhedra) {
+        file << p.id << " " << p.vertex_ids.size() << " " << p.edge_ids.size() << " " << p.face_ids.size() << " ";
+        for (auto v : p.vertex_ids) file << v << " ";
+        for (auto e : p.edge_ids) file << e << " ";
+        for (auto f : p.face_ids) file << f << " ";
+        file << endl;
+    }
+	file.close();
+}
