@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <limits>
+#include <queue>
 #include "PolyhedronMesh.hpp"
 
 using namespace std;
@@ -10,8 +12,6 @@ using namespace PolyhedronMesh;
 
 //ordinare in cell2Ds
 //tipo di polyhedron
-
-
 
 void normalize(vertex &v) {
     double norm = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -318,18 +318,99 @@ void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, 
 		buildIcosahedron(vertices, edges, faces, polyhedron);
 		return;
 	}
-
 }
-	
+
 bool isFaceConsistent(const face& face, const std::vector<edge>& edges) {
-    for (int i = 0; i < face.edge_ids.size(); ++i) {
-        int current = face.edge_ids[i];
-        int next = face.edge_ids[(i + 1) % face.edge_ids.size()];
+    const auto& ids = face.edge_ids;
+    if (ids.size() < 3) return false;
+
+    for (size_t i = 0; i < ids.size(); ++i) {
+        size_t current = ids[i];
+        size_t next = ids[(i + 1) % ids.size()];
+        
+        if (current >= edges.size() || next >= edges.size())
+            return false;
+
         if (edges[current].end != edges[next].origin)
             return false; 
     }
     return true;
+}
 
+double distance(const vertex& a, const vertex &b) {
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z + b.z));
+}
+
+void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId, int endId) {
+    int N = vertices.size();
+    std::vector<double> dist(N, std::numeric_limits<double>::infinity());
+    std::vector<int> prev(N, -1);
+    std::vector<bool> visited(N, false);
+
+    dist[startId] = 0.0;
+
+    using P = std::pair<double, int>;
+    std::priority_queue<P, std::vector<P>, std::greater<P>> pq;
+    pq.push({0.0, startId});
+
+    // Costruzione grafo come lista adiacenza
+    std::vector<std::vector<std::pair<int, double>>> adj(N);
+    for (const auto& e : edges) {
+        double len = e.length > 0 ? e.length : distance(vertices[e.origin], vertices[e.end]);
+        adj[e.origin].emplace_back(e.end, len);
+        adj[e.end].emplace_back(e.origin, len); // non orientato
+    }
+
+    // Algoritmo di Dijkstra
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (visited[u]) continue;
+        visited[u] = true;
+
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                prev[v] = u;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+
+    if (prev[endId] == -1) {
+        std::cout << "Nessun cammino tra i vertici " << startId << " e " << endId << "\n";
+        return;
+    }
+
+    // Ricostruzione cammino
+    std::vector<int> path;
+    for (int at = endId; at != -1; at = prev[at])
+        path.push_back(at);
+    std::reverse(path.begin(), path.end());
+
+    // Reset ShortPath
+    for (auto& v : vertices) v.ShortPath = 0;
+    for (auto& e : edges) e.ShortPath = 0;
+
+    // Marca i vertici
+    for (int v : path)
+        vertices[v].ShortPath = 1;
+
+    // Marca i lati e somma lunghezza
+    int edgeCount = 0;
+    double totalLength = 0.0;
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+        int u = path[i], v = path[i + 1];
+
+        for (auto& e : edges) {
+            if ((e.origin == u && e.end == v) || (e.origin == v && e.end == u)) {
+                e.ShortPath = 1;
+                e.length = distance(vertices[e.origin], vertices[e.end]);
+                totalLength += e.length;
+                edgeCount++;
+                break;
+            }
+        }
+    }
 }
 
 void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
@@ -345,7 +426,7 @@ void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
 	file.close();
 }
 
-void exportCell1Ds (const vector<edge>& edges, const string& filename = "cell1Ds.txt")
+void exportCell1Ds (const vector<edge>& edges, const string& filename)
 {
 	ofstream file(filename);
 	if (!file.is_open()){
@@ -359,7 +440,7 @@ void exportCell1Ds (const vector<edge>& edges, const string& filename = "cell1Ds
 	file.close();
 }
 
-void exportCell2Ds (const vector<face>& faces, const string& filename = "cell2Ds.txt")
+void exportCell2Ds (const vector<face>& faces, const string& filename)
 {
 	ofstream file(filename);
 	if (!file.is_open()){
@@ -376,7 +457,7 @@ void exportCell2Ds (const vector<face>& faces, const string& filename = "cell2Ds
 	file.close();
 }
 
-void exportCell3Ds (const vector<polyhedron>& polyhedra, const string& filename = "cell3Ds.txt")
+void exportCell3Ds (const vector<polyhedron>& polyhedra, const string& filename)
 {
 	ofstream file(filename);
 	if (!file.is_open()){

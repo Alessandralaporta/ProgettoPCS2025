@@ -6,9 +6,7 @@
 using namespace std;
 
 
-int main() 
-{
-	int p, q, b, c;
+int main() {
 	
 	return 0;
 }
