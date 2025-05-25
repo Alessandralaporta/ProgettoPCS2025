@@ -1,11 +1,12 @@
 #include "Utils.hpp"
+#include "PolyhedronMesh.hpp"
 #include <fstream>
 #include <iostream>
 #include <cmath>
 #include <vector>
 #include <limits>
 #include <queue>
-#include "PolyhedronMesh.hpp"
+
 
 using namespace std;
 using namespace PolyhedronMesh;
@@ -320,6 +321,112 @@ void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, 
 	}
 }
 
+vertex interpolate(const vertex& a, const vertex& b, double t) {
+    return {-1, (1 - t) * a.x + t * b.x, (1 - t) * a.y + t * b.y, (1 - t) * a.z + t * b.z};
+}
+
+bool sameVertex(const vertex& a, const vertex& b, double tolerance) {
+    return fabs(a.x - b.x) < tolerance && fabs(a.y - b.y) < tolerance && fabs(a.z - b.z) < tolerance;
+}
+
+
+int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
+    vertex v{-1, x, y, z};
+    normalize(v);
+    for (const auto& existing : vertices) {
+        if (sameVertex(existing, v)) {
+            return existing.id;
+        }
+    }
+    v.id = vertices.size();
+    vertices.push_back(v);
+    return v.id;
+}
+
+
+void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
+	if (p != 3 || (q != 3 && q != 4 && q != 5)) {
+		cerr << "Tipo non supportato" << endl;
+		return;
+	}
+	vector<vertex> baseVertices;
+	vector<edge> baseEdges;
+	vector<face> baseFace;
+	polyhedron basePoly;
+	buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFace, basePoly); //costruzione poliedro base
+	
+	//int T = b * b + b * c + c * c;
+	
+	for (const auto& f : baseFace) {
+        vertex A = baseVertices[f.vertex_ids[0]];
+        vertex B = baseVertices[f.vertex_ids[1]];
+        vertex C = baseVertices[f.vertex_ids[2]];
+
+        int N = b + c;
+        std::vector<std::vector<int>> grid(N + 1);
+
+        for (int i = 0; i <= N; ++i) {
+            grid[i].resize(i + 1);
+            for (int j = 0; j <= i; ++j) {
+                double alpha = (double)(b - j) / N;
+                double beta = (double)(c - (i - j)) / N;
+                double gamma = 1.0 - alpha - beta;
+
+                double x = alpha * A.x + beta * B.x + gamma * C.x;
+                double y = alpha * A.y + beta * B.y + gamma * C.y;
+                double z = alpha * A.z + beta * B.z + gamma * C.z;
+
+                int id = getOrAddVertex(x, y, z, vertices);
+                grid[i][j] = id;
+            }
+        }
+
+        // crea triangoli dalla griglia
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < i + 1; ++j) {
+                int v0 = grid[i][j];
+                int v1 = grid[i + 1][j];
+                int v2 = grid[i + 1][j + 1];
+                faces.push_back({(int)faces.size(), {v0, v1, v2}, {}});
+
+                if (j < i) {
+                    int v3 = grid[i][j + 1];
+                    faces.push_back({(int)faces.size(), {v0, v2, v3}, {}});
+                }
+            }
+        }
+    }
+
+    // crea gli spigoli
+    for (auto& f : faces) {
+        for (int i = 0; i < 3; ++i) {
+            int a = f.vertex_ids[i];
+            int b = f.vertex_ids[(i + 1) % 3];
+            bool found = false;
+            for (const auto& e : edges) {
+                if ((e.origin == a && e.end == b) || (e.origin == b && e.end == a)) {
+                    f.edge_ids.push_back(e.id);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                edge e;
+                e.id = edges.size();
+                e.origin = a;
+                e.end = b;
+                edges.push_back(e);
+                f.edge_ids.push_back(e.id);
+            }
+        }
+    }
+	
+	poly.id = 0;
+	for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
+    for (const auto& e : edges) poly.edge_ids.push_back(e.id);
+    for (const auto& f : faces) poly.face_ids.push_back(f.id);
+}
+	
 bool isFaceConsistent(const face& face, const std::vector<edge>& edges) {
     const auto& ids = face.edge_ids;
     if (ids.size() < 3) return false;
@@ -354,7 +461,7 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
     pq.push({0.0, startId});
 
     // Costruzione grafo come lista adiacenza
-    vector<vector<spair<int, double>>> adj(N);
+    vector<vector<pair<int, double>>> adj(N);
     for (const auto& e : edges) {
         double len = e.length > 0 ? e.length : distance(vertices[e.origin], vertices[e.end]);
         adj[e.origin].emplace_back(e.end, len);
@@ -387,7 +494,7 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
         path.push_back(at);
     reverse(path.begin(), path.end());
 
-    // Reset ShortPath
+    // Resetta ShortPath
     for (auto& v : vertices) v.ShortPath = 0;
     for (auto& e : edges) e.ShortPath = 0;
 
