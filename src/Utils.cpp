@@ -6,6 +6,8 @@
 #include <vector>
 #include <limits>
 #include <queue>
+#include <algorithm>
+#include <map>
 
 
 using namespace std;
@@ -343,27 +345,68 @@ int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
     return v.id;
 }
 
+void triangulateFaces(const vector<face>& inputFaces, vector<face>& outputFaces) {
+    outputFaces.clear();
+    int faceId = 0;
+
+    for (const auto& f : inputFaces) {
+        const auto& v = f.vertex_ids;
+        if (v.size() < 3) {
+            cerr << "Faccia con meno di 3 vertici, ignorata." << endl;
+            continue;
+        }
+
+        // se è già un triangolo, lo copiamo così com'è
+        if (v.size() == 3) {
+            outputFaces.push_back({faceId++, v, {}});
+            continue;
+        }
+
+        // triangolazione
+        for (size_t i = 1; i < v.size() - 1; ++i) {
+            outputFaces.push_back({faceId++, {v[0], v[i], v[i + 1]}, {}});
+        }
+    }
+}
+
 
 void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
-	if (p != 3 || (q != 3 && q != 4 && q != 5)) {
-		cerr << "Tipo non supportato" << endl;
-		return;
-	}
-	vector<vertex> baseVertices;
-	vector<edge> baseEdges;
-	vector<face> baseFace;
-	polyhedron basePoly;
-	buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFace, basePoly); //costruzione poliedro base
-	
-	//int T = b * b + b * c + c * c;
-	
-	for (const auto& f : baseFace) {
+    if ((p < 3 || p > 5) || (q != 3 && q != 4 && q != 5)) {
+        std::cerr << "Tipo non supportato: p = " << p << ", q = " << q << std::endl;
+        return;
+    }
+
+    vector<vertex> baseVertices;
+    vector<edge> baseEdges;
+    vector<face> baseFaces;
+    polyhedron basePoly;
+
+    buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
+
+    // triangola tutte le facce (se necessario)
+    vector<face> triangleFaces;
+    int faceId = 0;
+    for (const auto& f : baseFaces) {
+        const auto& v = f.vertex_ids;
+        if (v.size() == 3) {
+            triangleFaces.push_back({faceId++, v, {}});
+        } else if (v.size() > 3) {
+            for (size_t i = 1; i < v.size() - 1; ++i) {
+                triangleFaces.push_back({faceId++, {v[0], v[i], v[i + 1]}, {}});
+            }
+        } else {
+            std::cerr << "Faccia con meno di 3 vertici, ignorata." << std::endl;
+        }
+    }
+
+    // suddivisione geodetica
+    int N = b + c;
+    for (const auto& f : triangleFaces) {
         vertex A = baseVertices[f.vertex_ids[0]];
         vertex B = baseVertices[f.vertex_ids[1]];
         vertex C = baseVertices[f.vertex_ids[2]];
 
-        int N = b + c;
-        std::vector<std::vector<int>> grid(N + 1);
+        vector<vector<int>> grid(N + 1);
 
         for (int i = 0; i <= N; ++i) {
             grid[i].resize(i + 1);
@@ -398,32 +441,32 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
     }
 
     // crea gli spigoli
+    edges.clear();
+    map<int, int> edgeMap;
+    const int MAX_VERTS = 10000;
+
     for (auto& f : faces) {
         for (int i = 0; i < 3; ++i) {
             int a = f.vertex_ids[i];
             int b = f.vertex_ids[(i + 1) % 3];
-            bool found = false;
-            for (const auto& e : edges) {
-                if ((e.origin == a && e.end == b) || (e.origin == b && e.end == a)) {
-                    f.edge_ids.push_back(e.id);
-                    found = true;
-                    break;
-                }
+            int key = min(a, b) * MAX_VERTS + std::max(a, b);
+
+            if (edgeMap.count(key) == 0) {
+                int id = edges.size();
+                edges.push_back({id, a, b});
+                edgeMap[key] = id;
             }
-            if (!found) {
-                edge e;
-                e.id = edges.size();
-                e.origin = a;
-                e.end = b;
-                edges.push_back(e);
-                f.edge_ids.push_back(e.id);
-            }
+            f.edge_ids.push_back(edgeMap[key]);
         }
     }
-	
-	poly.id = 0;
-	for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
+
+    // aggiorna poly
+    poly.id = 0;
+    //poly.vertex_ids.clear();
+    for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
+    //poly.edge_ids.clear();
     for (const auto& e : edges) poly.edge_ids.push_back(e.id);
+    //poly.face_ids.clear();
     for (const auto& f : faces) poly.face_ids.push_back(f.id);
 }
 	

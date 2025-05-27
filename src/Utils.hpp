@@ -23,6 +23,8 @@ bool sameVertex(const PolyhedronMesh::vertex& a, const PolyhedronMesh::vertex& b
 
 int getOrAddVertex(double x, double y, double z, std::vector<PolyhedronMesh::vertex>& vertices);
 
+void triangulateFaces(const std::vector<PolyhedronMesh::face>& inputFaces, std::vector<PolyhedronMesh::face>& outputFaces);
+
 void buildGeodesicPolyhedron(int p, int q, int b, int c, std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& poly);
 
 double distance(const PolyhedronMesh::vertex& a, const PolyhedronMesh::vertex& b);

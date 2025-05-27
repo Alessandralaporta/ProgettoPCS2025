@@ -1,0 +1,13 @@
+# Credits
+
+## Autori principali
+- Alessandra La Porta
+- Simona Calosso  
+- Andrea Petito  
+  
+
+## Codice di terze parti
+- Codice per l'ExportParaview fornito dal Professor Fabio Vicini
+
+## Ringraziamenti speciali
+- A tutti coloro che hanno supportato e contribuito indirettamente al progetto

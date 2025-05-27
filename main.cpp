@@ -13,7 +13,7 @@ int main() {
 	vector<face> faces;
 	polyhedron poly;
 
-	int p = 3, q = 5, b = 2, c = 0; // esempio: classe I icosaedrica
+	int p = 4, q = 3, b = 2, c = 0; // esempio: classe I cubo
 	buildGeodesicPolyhedron(p, q, b, c, vertices, edges, faces, poly);
 	exportCell0Ds(vertices, "Cell0Ds.txt");
 	exportCell1Ds(edges, "Cell1Ds.txt");
