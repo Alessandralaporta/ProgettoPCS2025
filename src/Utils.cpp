@@ -8,6 +8,7 @@
 #include <queue>
 #include <algorithm>
 #include <map>
+#include <set>
 
 
 using namespace std;
@@ -584,31 +585,43 @@ void exportCell2Ds (const vector<face>& faces, const string& filename)
 	file.close();
 }
 
-void exportCell3Ds (const vector<polyhedron>& polyhedra, const string& filename)
+void exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename)
 {
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell3Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &p : polyhedra) {
-        file << p.id << " " << p.vertex_ids.size() << " " << p.edge_ids.size() << " " << p.face_ids.size() << " ";
-        for (auto v : p.vertex_ids) file << v << " ";
-        for (auto e : p.edge_ids) file << e << " ";
-        for (auto f : p.face_ids) file << f << " ";
-        file << endl;
+    ofstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Errore nell'apertura del file Cell3Ds: " << filename << endl;
+        return;
     }
-	file.close();
+
+    for (const auto& p : polyhedra) {
+        file << "ID: " << p.id << "\n";
+        file << "Num Vertici: " << p.vertex_ids.size() << "\n";
+        file << "Num Lati: " << p.edge_ids.size() << "\n";
+        file << "Num Facce: " << p.face_ids.size() << "\n";
+
+        file << "Vertici: ";
+        for (auto v : p.vertex_ids) file << v << " ";
+        file << "\n";
+
+        file << "Lati: ";
+        for (auto e : p.edge_ids) file << e << " ";
+        file << "\n";
+
+        file << "Facce: ";
+        for (auto f : p.face_ids) file << f << " ";
+        file << "\n\n";
+    }
+
+    file.close();
 }
 
-vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<face>& faces){
+vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<face>& faces) {
     vector<vertex> centroids;
-    centroids.reserve(faces.size()); //serve per ottimizzare le prestazioni
-    for(const auto&f : faces){
-        double cx=0, , cy =0, cz=0;
+    centroids.reserve(faces.size());
+    for (const auto& f : faces) {
+        double cx = 0, cy = 0, cz = 0;
         int n = f.vertex_ids.size();
-        for(int vid : f.vertex_ids){
+        for (int vid : f.vertex_ids) {
             cx += vertices[vid].x;
             cy += vertices[vid].y;
             cz += vertices[vid].z;
@@ -616,79 +629,80 @@ vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<f
         cx /= n;
         cy /= n;
         cz /= n;
-        
+
         vertex center(centroids.size(), cx, cy, cz);
-        //center = center.normalized();
         centroids.push_back(center);
     }
     return centroids;
 }
 
-void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<face>& dualFaces, polyhedron& dualPoly){
+void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<face>& dualFaces, polyhedron& dualPoly) {
+
     dualVertices = calculateCentroids(vertices, faces);
     map<int, vector<int>> vertexToFaceIds;
-    //mappa ogni verice alle facce che lo contengono
-    for(const auto& f: faces){
-        for(int vid : f.vertex_ids){
-            vertexToFaceIds[vId].push_back(f.id);
+
+    // Mappa ogni vertice alle facce che lo contengono
+    for (const auto& f : faces) {
+        for (int vid : f.vertex_ids) {
+            vertexToFaceIds[vid].push_back(f.id);
         }
     }
+
     int newFaceId = 0;
-    dualFaces.clear();// dualfaces è passato per riferimento alla funzione, potrebbe contenere dei residui da prima della chiamata
+    dualFaces.clear();
     dualFaces.reserve(vertices.size());
-    for(const auto& [vId, adjacentFaceIds] : vertexTofaceIds){
+
+    for (const auto& [vId, adjacentFaceIds] : vertexToFaceIds) {
         const vertex& center = vertices[vId];
         vector<pair<double, int>> ordered;
-        
-        for (int fid : adjacentFaceIds){
+
+        for (int fid : adjacentFaceIds) {
             const vertex& fcenter = dualVertices[fid];
             double dx = fcenter.x - center.x;
             double dy = fcenter.y - center.y;
-            double angle = atan2(dy,dx);
+            double angle = atan2(dy, dx);
             ordered.emplace_back(angle, fid);
         }
-        
+
         sort(ordered.begin(), ordered.end());
-        face nexFace(newFaceId++);
-        for (const auto& [angle, fid]: ordered)
+
+        face newFace(newFaceId++);
+        for (const auto& [angle, fid] : ordered)
             newFace.vertex_ids.push_back(fid);
-        
+
         dualFaces.push_back(newFace);
     }
-    
+
     dualPoly.id = original.id + 1000;
     dualPoly.vertex_ids.clear();
     dualPoly.edge_ids.clear();
     dualPoly.face_ids.clear();
-    dualPoly.vertex_ids.reserve(dualVertices.size());
-    dualPoly.edge_ids.reserve(dualEdges.size());
-    dualPoly.face_ids.reserve(dualFaces.size());
-    
-    for(const auto& v: dualVertices)
-        dualPoly.vertes_ids.push_back(v.id);
-    for(const auto& v: dualFaces)
-        dualPoly.faces_ids.push_back(f.id);
-    
-    dualPoly.num_vertices = dualVertices.size();
-    dualPoly.num_faces = dualFaces.size();
-    
-    set<pair<int,int>> uniqueEdges;
+
+    for (const auto& v : dualVertices)
+        dualPoly.vertex_ids.push_back(v.id);
+    for (const auto& f : dualFaces)
+        dualPoly.face_ids.push_back(f.id);
+
+    // Costruzione degli spigoli unici del duale
+    set<pair<int, int>> uniqueEdges;
     int edgeId = 0;
-    
-    for (const auto& f : dualFaces){
+
+    for (const auto& f : dualFaces) {
         int n = f.vertex_ids.size();
-        for(int i =0; i < n; ++i){
+        for (int i = 0; i < n; ++i) {
             int a = f.vertex_ids[i];
-            int b = f.vertes_ids[(i+1) % n];
-            
-            if (a>b) swap(a, b);
-            if (uniqueEdges.insert({a, b}).second){
-                dualPoly.endge_ids.push_back(edgeId++);
+            int b = f.vertex_ids[(i + 1) % n];
+
+            if (a > b) swap(a, b);
+            if (uniqueEdges.insert({a, b}).second) {
+                dualPoly.edge_ids.push_back(edgeId++);
             }
         }
     }
+
+    dualPoly.num_vertices = dualVertices.size();
+    dualPoly.num_faces = dualFaces.size();
     dualPoly.num_edges = dualPoly.edge_ids.size();
-    
 }
 
 

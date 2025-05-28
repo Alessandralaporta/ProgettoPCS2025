@@ -11,6 +11,7 @@ namespace PolyhedronMesh {
 struct vertex {
     int id;
     double x, y, z;
+	int ShortPath = 0;
     vertex(): id(-1),x(0.0),y(0.0),z(0.0){}
     vertex(int _id, double _x, double _y, double _z) : id(_id), x(_x), y(_y), z(_z){}
     //operatore somma vettoriale
@@ -52,8 +53,8 @@ struct edge {
     int origin;
     int end;
     
-    //double length = 0.0;
-    //int ShortPath = 0;
+    double length = 0.0;
+    int ShortPath = 0;
     edge() : id(-1), origin(-1), end(-1) {}
     edge(int _id, int _origin, int _end) : id(_id), origin(_origin), end(_end) {}
 };
@@ -64,6 +65,9 @@ struct face {
     vector<int> edge_ids;
     face() : id(-1) {}
     face(int _id) : id(_id) {}
+	
+	face(int _id, const vector<int>& verts, const vector<int>& edges)
+        : id(_id), vertex_ids(verts), edge_ids(edges) {}
 };
 
 struct polyhedron {

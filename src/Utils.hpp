@@ -36,7 +36,9 @@ void exportCell1Ds(const std::vector<PolyhedronMesh::edge>& edges, const std::st
 void exportCell2Ds(const std::vector<PolyhedronMesh::face>& faces, const std::string& filename = "cell2Ds.txt");
 
 void exportCell3Ds(const std::vector<PolyhedronMesh::polyhedron>& polyhedra, const std::string& filename = "cell3Ds.txt");
+
 void projectVerticesOnUnitSphere(std::vector<PolyhedronMesh::vertex> & vertices);
 
-std::vector<vertex> calculateCentroids(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::face>& faces);
-void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<face>& dualFaces, polyhedron& dualPoly);
+std::vector<PolyhedronMesh::vertex> calculateCentroids(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::face>& faces);
+
+void buildDualPolyhedron(const vector<PolyhedronMesh::vertex>& vertices, const vector<PolyhedronMesh::face>& faces, const PolyhedronMesh::polyhedron& original, vector<PolyhedronMesh::vertex>& dualVertices, vector<PolyhedronMesh::face>& dualFaces, PolyhedronMesh::polyhedron& dualPoly);
