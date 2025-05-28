@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 # ProgettoPCS2025 is the project name
 project(ProgettoPCS2025 LANGUAGES C CXX VERSION 1.0.0)

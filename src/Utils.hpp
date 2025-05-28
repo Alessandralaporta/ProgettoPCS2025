@@ -17,8 +17,6 @@ void buildIcosahedron(std::vector<PolyhedronMesh::vertex>& vertices, std::vector
 
 void buildPolyhedron(int p, int q, int b, int c, std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& polyhedron);
 
-PolyhedronMesh::vertex interpolate(const PolyhedronMesh::vertex& a, const PolyhedronMesh::vertex& b, double t);
-
 bool sameVertex(const PolyhedronMesh::vertex& a, const PolyhedronMesh::vertex& b, double tolerance = 1e-6);
 
 int getOrAddVertex(double x, double y, double z, std::vector<PolyhedronMesh::vertex>& vertices);
@@ -38,3 +36,7 @@ void exportCell1Ds(const std::vector<PolyhedronMesh::edge>& edges, const std::st
 void exportCell2Ds(const std::vector<PolyhedronMesh::face>& faces, const std::string& filename = "cell2Ds.txt");
 
 void exportCell3Ds(const std::vector<PolyhedronMesh::polyhedron>& polyhedra, const std::string& filename = "cell3Ds.txt");
+void projectVerticesOnUnitSphere(std::vector<PolyhedronMesh::vertex> & vertices);
+
+std::vector<vertex> calculateCentroids(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::face>& faces);
+void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<face>& dualFaces, polyhedron& dualPoly);

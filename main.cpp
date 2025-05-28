@@ -15,6 +15,7 @@ int main() {
 
 	int p = 4, q = 3, b = 2, c = 0; // esempio: classe I cubo
 	buildGeodesicPolyhedron(p, q, b, c, vertices, edges, faces, poly);
+    projectVerticesOnUnitSphere(vertices);
 	exportCell0Ds(vertices, "Cell0Ds.txt");
 	exportCell1Ds(edges, "Cell1Ds.txt");
 	exportCell2Ds(faces, "Cell2Ds.txt");
