@@ -17,18 +17,10 @@ using namespace PolyhedronMesh;
 //ordinare in cell2Ds
 //tipo di polyhedron
 
-void normalize(vertex &v) {
-    double norm = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-	if (norm > 1e-12) {  
-        v.x /= norm;
-        v.y /= norm;
-        v.z /= norm;
-    }
-}
 
 void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
-	//vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear(); edges.clear(); faces.clear();
 	
 	vertices = {
 		{0, 1, 1, 1},
@@ -36,10 +28,6 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 		{2, -1, 1, -1},
 		{3, 1, -1, -1}
 	};
-	
-	/*for (size_t i = 0; i < vertices.size(); ++i) {
-		normalize(vertices[i]);
-	}*/
 	
 	edges = {
 		{0, 0, 1}, {1, 0, 2}, {2, 0, 3},
@@ -54,17 +42,17 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 	};
 	
 	polyhedron.id = 0;
-	//polyhedron.vertex_ids.clear();
+	polyhedron.vertex_ids.clear();
 	for (size_t i = 0; i < vertices.size(); ++i) {
 		polyhedron.vertex_ids.push_back(i);
 	}
 
-	//polyhedron.edge_ids.clear();
+	polyhedron.edge_ids.clear();
 	for (size_t i = 0; i < edges.size(); ++i) {
 		polyhedron.edge_ids.push_back(i);
 	}
 
-	//polyhedron.face_ids.clear();
+	polyhedron.face_ids.clear();
 	for (size_t i = 0; i < faces.size(); ++i) {
 		polyhedron.face_ids.push_back(i);
 	}
@@ -72,7 +60,7 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 
 void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
-	//vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear(); edges.clear(); faces.clear();
 	
 	vertices = {
 		{0, -1, -1, -1},
@@ -84,11 +72,6 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 		{6,  1,  1,  1},
 		{7, -1,  1,  1}
 	};
-	
-	/*for (size_t i = 0; i < vertices.size(); ++i) {
-		normalize(vertices[i]);
-	}
-     */
 	
 	edges = {
 		{0, 0, 1}, {1, 1, 2}, {2, 2, 3}, {3, 3, 0},
@@ -106,17 +89,17 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 	};
 	
 	polyhedron.id = 1;
-    //polyhedron.vertex_ids.clear();
+    polyhedron.vertex_ids.clear();
 	for (size_t i = 0; i < vertices.size(); ++i) {
 		polyhedron.vertex_ids.push_back(i);
 	}
 
-	//polyhedron.edge_ids.clear();
+	polyhedron.edge_ids.clear();
 	for (size_t i = 0; i < edges.size(); ++i) {
 		polyhedron.edge_ids.push_back(i);
 	}
 
-	//polyhedron.face_ids.clear();
+	polyhedron.face_ids.clear();
 	for (size_t i = 0; i < faces.size(); ++i) {
 		polyhedron.face_ids.push_back(i);
 	}
@@ -124,7 +107,7 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 
 void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
-	//vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear(); edges.clear(); faces.clear();
 	
 	 vertices = {
         {0,  1,  0,  0},
@@ -134,10 +117,6 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
         {4,  0,  0,  1}, 
         {5,  0,  0, -1}   
     };
-	
-	/*for (size_t i = 0; i < vertices.size(); ++i) {
-		normalize(vertices[i]);
-	}*/
 	
 	edges = {
         {0, 0, 2}, {1, 2, 1}, {2, 1, 3}, {3, 3, 0}, 
@@ -157,17 +136,17 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
     };
 	
 	polyhedron.id = 2;
-    //polyhedron.vertex_ids.clear();
+    polyhedron.vertex_ids.clear();
 	for (size_t i = 0; i < vertices.size(); ++i) {
 		polyhedron.vertex_ids.push_back(i);
 	}
 
-	//polyhedron.edge_ids.clear();
+	polyhedron.edge_ids.clear();
 	for (size_t i = 0; i < edges.size(); ++i) {
 		polyhedron.edge_ids.push_back(i);
 	}
 
-	//polyhedron.face_ids.clear();
+	polyhedron.face_ids.clear();
 	for (size_t i = 0; i < faces.size(); ++i) {
 		polyhedron.face_ids.push_back(i);
 	}
@@ -178,7 +157,7 @@ const double phi = (1.0 + std::sqrt(5.0)) / 2.0;
 
 void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
-	//vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear(); edges.clear(); faces.clear();
 	
     const float a = 1.0 / phi;
     const float b = 1.0;
@@ -190,10 +169,6 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
         {12,  a,  phi, 0}, {13,  a, -phi, 0}, {14, -a,  phi, 0}, {15, -a, -phi, 0},
         {16,  phi, 0,  a}, {17,  phi, 0, -a}, {18, -phi, 0,  a}, {19, -phi, 0, -a}
     };
-
-    /*for (size_t i = 0; i < vertices.size(); ++i) {
-        normalize(vertices[i]);
-    }*/
 
     edges = {
         { 0, 0, 8}, { 1, 0,12}, { 2, 0, 4}, { 3, 0,16}, { 4, 0, 2},
@@ -221,17 +196,17 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
     };
 	
 	polyhedron.id = 3;
-	//polyhedron.vertex_ids.clear();
+	polyhedron.vertex_ids.clear();
 	for (size_t i = 0; i < vertices.size(); ++i) {
 		polyhedron.vertex_ids.push_back(i);
 	}
 
-	//polyhedron.edge_ids.clear();
+	polyhedron.edge_ids.clear();
 	for (size_t i = 0; i < edges.size(); ++i) {
 		polyhedron.edge_ids.push_back(i);
 	}
 
-	//polyhedron.face_ids.clear();
+	polyhedron.face_ids.clear();
 	for (size_t i = 0; i < faces.size(); ++i) {
 		polyhedron.face_ids.push_back(i);
 	}
@@ -239,17 +214,13 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
 
 void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
-	//vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear(); edges.clear(); faces.clear();
 	
 	 vertices = {
         {0, -1,  phi, 0}, {1, 1,  phi, 0}, {2, -1, -phi, 0}, {3, 1, -phi, 0},
         {4, 0, -1,  phi}, {5, 0, 1,  phi}, {6, 0, -1, -phi}, {7, 0, 1, -phi},
         {8,  phi, 0, -1}, {9,  phi, 0, 1}, {10, -phi, 0, -1}, {11, -phi, 0, 1}
     };
-
-    /*for (size_t i = 0; i < vertices.size(); ++i) {
-        normalize(vertices[i]);
-    }*/
 
     edges = {
         {0, 0, 1}, {1, 0, 5}, {2, 0, 11}, {3, 0, 4}, {4, 0, 10},
@@ -271,17 +242,17 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
     };
 
     polyhedron.id = 4;
-    //polyhedron.vertex_ids.clear();
+    polyhedron.vertex_ids.clear();
 	for (size_t i = 0; i < vertices.size(); ++i) {
 		polyhedron.vertex_ids.push_back(i);
 	}
 
-	//polyhedron.edge_ids.clear();
+	polyhedron.edge_ids.clear();
 	for (size_t i = 0; i < edges.size(); ++i) {
 		polyhedron.edge_ids.push_back(i);
 	}
 
-	//polyhedron.face_ids.clear();
+	polyhedron.face_ids.clear();
 	for (size_t i = 0; i < faces.size(); ++i) {
 		polyhedron.face_ids.push_back(i);
 	}
@@ -332,7 +303,6 @@ bool sameVertex(const vertex& a, const vertex& b, double tolerance) {
 
 int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
     vertex v{-1, x, y, z};
-    //normalize(v);
     for (const auto& existing : vertices) {
         if (sameVertex(existing, v)) {
             return existing.id;
@@ -344,7 +314,7 @@ int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
 }
 void projectVerticesOnUnitSphere(vector<vertex>&vertices){
     for(auto& v : vertices){
-        normalize(v);
+        v = v.normalized();
     }
 }
 
@@ -439,12 +409,12 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
     }
 
     // aggiorna poly
-    poly.id = 0;
-    //poly.vertex_ids.clear();
+    //poly.id = 0;
+    poly.vertex_ids.clear();
     for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
-    //poly.edge_ids.clear();
+    poly.edge_ids.clear();
     for (const auto& e : edges) poly.edge_ids.push_back(e.id);
-    //poly.face_ids.clear();
+    poly.face_ids.clear();
     for (const auto& f : faces) poly.face_ids.push_back(f.id);
 }
 	
@@ -478,7 +448,7 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
     dist[startId] = 0.0;
 
     using P = pair<double, int>;
-    priority_queue<P, std::vector<P>, std::greater<P>> pq;
+    priority_queue<P, vector<P>, greater<P>> pq;
     pq.push({0.0, startId});
 
     // Costruzione grafo come lista adiacenza
@@ -704,5 +674,4 @@ void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& fac
     dualPoly.num_faces = dualFaces.size();
     dualPoly.num_edges = dualPoly.edge_ids.size();
 }
-
 
