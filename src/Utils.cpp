@@ -17,6 +17,15 @@ using namespace PolyhedronMesh;
 //ordinare in cell2Ds
 //tipo di polyhedron
 
+void normalize(vertex& v) {
+    double len = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    if (len == 0)  {
+		return;
+	}	
+    v.x /= len;
+    v.y /= len;
+    v.z /= len;
+}
 
 void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
@@ -302,19 +311,24 @@ bool sameVertex(const vertex& a, const vertex& b, double tolerance) {
 
 
 int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
-    vertex v{-1, x, y, z};
-    for (const auto& existing : vertices) {
-        if (sameVertex(existing, v)) {
+    for (auto& existing : vertices) {
+        if (sameVertex(existing, vertex{-1, x, y, z})) {
+            // Se il vertice è già presente MA non ha ancora un id valido, lo assegna ora
+            if (existing.id == -1)
+                existing.id = &existing - &vertices[0]; // o usare un contatore globale
             return existing.id;
         }
     }
-    v.id = vertices.size();
+    int newId = vertices.size();
+    vertex v{newId, x, y, z};
     vertices.push_back(v);
-    return v.id;
+    return newId;
 }
+
+
 void projectVerticesOnUnitSphere(vector<vertex>&vertices){
     for(auto& v : vertices){
-        v = v.normalized();
+        normalize(v);
     }
 }
 
@@ -407,15 +421,15 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
             f.edge_ids.push_back(edgeMap[key]);
         }
     }
-
-    // aggiorna poly
-    //poly.id = 0;
+	
     poly.vertex_ids.clear();
     for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
     poly.edge_ids.clear();
     for (const auto& e : edges) poly.edge_ids.push_back(e.id);
     poly.face_ids.clear();
     for (const auto& f : faces) poly.face_ids.push_back(f.id);
+	
+	poly.id = basePoly.id;
 }
 	
 bool isFaceConsistent(const face& face, const std::vector<edge>& edges) {
@@ -519,7 +533,9 @@ void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
 	}
 	
 	for (const auto &v : vertices){
-		file << v.id << " " << v.x << " " << v.y << " " << v.z << " " << v.ShortPath << endl;		
+		file << "ID: " << v.id << "\n";
+		file << "Coordinate: " << v.x << " " << v.y << " " << v.z << "\n";
+		//file << "ShortPath: " << v.ShortPath << "\n\n";
 	}
 	file.close();
 }
@@ -533,7 +549,9 @@ void exportCell1Ds (const vector<edge>& edges, const string& filename)
 	}
 	
 	for (const auto &e : edges){
-		file << e.id << " " << e.origin << " " << e.end << endl;		
+		file << "ID: " << e.id << "\n";
+		file << "Origin: " << e.origin << "\n";
+		file << "End: " << e.end << "\n";		
 	}
 	file.close();
 }
@@ -547,10 +565,15 @@ void exportCell2Ds (const vector<face>& faces, const string& filename)
 	}
 	
 	for (const auto &f : faces) {
-        file << f.id << " " << f.vertex_ids.size() << " " << f.edge_ids.size() << " ";
-        for (auto v : f.vertex_ids) file << v << " ";
-        for (auto e : f.edge_ids) file << e << " ";
-        file << endl;
+        file << "ID: " << f.id << "\n";
+		file << "Num Vertici: " << f.vertex_ids.size() << "\n";
+		file << "Num Lati: " << f.edge_ids.size() << "\n";
+		file << "Vertici: ";
+		for (auto v : f.vertex_ids) file << v << " ";
+		file << "\n";
+		file << "Lati: ";
+		for (auto e : f.edge_ids) file << e << " ";
+		file << "\n";
 	}
 	file.close();
 }

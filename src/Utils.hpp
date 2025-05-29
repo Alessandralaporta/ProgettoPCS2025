@@ -3,6 +3,8 @@
 #include <vector>
 #include "PolyhedronMesh.hpp"
 
+void normalize(PolyhedronMesh::vertex& v);
+
 void buildTetrahedron(std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& polyhedron);
 
 void buildEsahedron(std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& polyhedron);
