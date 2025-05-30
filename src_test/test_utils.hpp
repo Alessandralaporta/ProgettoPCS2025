@@ -1,12 +1,14 @@
 #pragma once
-
 #include <iostream>
 #include <vector>
-
+#include <cmath>
 #include <gtest/gtest.h>
 #include "PolyhedronMesh.hpp"
+#include "Utils.hpp"
 
+using namespace std;
 using namespace PolyhedronMesh;
+
 //test caso generale normalized
 TEST(UtilsTest, NormalizeRegularVector) {
     vertex v{0, 3.0, 0.0, 4.0};
@@ -27,7 +29,7 @@ TEST(UtilsTest, NormalizeZeroVector) {
 TEST(UtilsTest, NormalizeAlreadyNormalized) {
     vertex v{0, 0.0, 0.6, 0.8};
     normalize(v);
-    double len = sqrt(v.x*v.x + v.y*v.y + v.z*v.z)
+    double len = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);;
     EXPECT_NEAR(len, 1.0, 1e-6);
     EXPECT_NEAR(v.y, 0.6, 1e-6);
     EXPECT_NEAR(v.z, 0.8, 1e-6);
@@ -58,7 +60,7 @@ TEST(UtilsTest, DistanceZero){
 TEST(UtilsTest, DistanceNegativeCoordinates) {
     vertex a{0, -1.0, -2.0, -3.0};
     vertex b{1, 4.0, 6.0, 8.0};
-    double expected = sqrt(pow(-1 -4, 2)+ pow(-2 -6, 2) + pow(-3 -8,2));
+    double expected = sqrt((a.x - b.x) * (a.x - b.x) +  (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
     EXPECT_NEAR(distance(a, b), expected, 1e-6);
 }
 
@@ -69,18 +71,10 @@ TEST(UtilsTest, DistanceIdenticalVertices) {
     EXPECT_DOUBLE_EQ(distance(a, b), 0.0);
 }
 
-//test funzione distanza 3D
-TEST(UtilsTest, Distance3D) {
-    vertex a{0, 1.0, 2.0, 3.0};
-    vertex b{1, 4.0, 6.0, 8.0};
-    double expected = sqrt(pow(1 -4, 2)+ pow(2 -6, 2) + pow(3 -8,2));
-    EXPECT_NEAR(distance(a, b), expected, 1e-6);
-}
-
 //verifica aggiunta primo vertice inserito corrrettamente (GetOrAddVertex)
 TEST(UtilsTest, GetOrAddVertexAdd) {
     vector<vertex> verts;
-    int id = getOrAddVertex(1.0,2.0 3.0, verts);
+    int id = getOrAddVertex(1.00001, 2.00001, 3.00001, verts);
     EXPECT_EQ(id, 0);
     EXPECT_EQ(verts.size(), 1);
 }
@@ -122,9 +116,9 @@ TEST(UtilsTest, ProjectVerticesBasic) {
         {1, 0.0, 0.0, 0.0}
     };
     projectVerticesOnUnitSphere(verts);
-    EXPECT_NEAR(sqrt(verts[0].x * verts[0].x + verts[0].y * verts[0].y + verts[0].z * verts[0].z), 1.0, 1e-6);
+    EXPECT_NEAR(std::sqrt(verts[0].x * verts[0].x + verts[0].y * verts[0].y + verts[0].z * verts[0].z), 1.0, 1e-6); 
     EXPECT_DOUBLE_EQ(verts[1].x, 0.0);
-    EXPECT_DOUBLE_EQ(verts[1].y, 0.0);
+	EXPECT_DOUBLE_EQ(verts[1].y, 0.0);
     EXPECT_DOUBLE_EQ(verts[1].z, 0.0);
 }
 
@@ -153,7 +147,7 @@ TEST(UtilsTest, ProjectVerticesNegativeComponents) {
     EXPECT_NEAR(verts[0].z, -0.8, 1e-6);
 }
 
- // test costruzione vertici con componenti molto piccole(quasi zero9
+ // test costruzione vertici con componenti molto piccole(quasi zero)
 TEST(UtilsTest, ProjectVerticesVerySmallVector) {
     vector<vertex> verts = {
         {0, 1e-10, 0.0, 1e-10}
@@ -207,57 +201,80 @@ TEST(UtilsTest, OutsideToleranceZ) {
 // vedere se è da mettere qui o in polyhedronMesh
 // test se gli spigoli sono coerenti
 // test facce meno di 3 spigoli
+// test facce meno di 3 spigoli
+// test facce meno di 3 spigoli
 TEST(UtilsTest, LessThan3Edges) {
-    face f{{0, 1}}; // solo 2 edges
-    std::vector<edge> edges = {
-        {0, 1}, {1, 2}
-    };
+    face f;
+    f.edge_ids = {0, 1}; // solo 2 edges
+
+    std::vector<edge> edges;
+    edges.push_back(edge(0, 0, 1)); // id=0, origin=0, end=1
+    edges.push_back(edge(1, 1, 2)); // id=1, origin=1, end=2
+
     EXPECT_FALSE(isFaceConsistent(f, edges));
 }
 
-//test ID spigolo fuori intervallo
+// test ID spigolo fuori intervallo
 TEST(UtilsTest, EdgeIdOutOfRange) {
-    face f{{0, 2, 3}};
-    std::vector<edge> edges = {
-        {0, 1}, {1, 2}
-    };
+    face f;
+    f.edge_ids = {0, 2, 3};
+
+    std::vector<edge> edges;
+    edges.push_back(edge(0, 0, 1));
+    edges.push_back(edge(1, 1, 2));
+
     EXPECT_FALSE(isFaceConsistent(f, edges));
 }
 
 // test spigoli non collegati tra loro
 TEST(UtilsTest, NonConsecutiveEdges) {
-    face f{{0, 1, 2}};
-    std::vector<edge> edges = {
-        {0, 1}, {2, 3}, {4, 5}
-    };
+    face f;
+    f.edge_ids = {0, 1, 2};
+
+    std::vector<edge> edges;
+    edges.push_back(edge(0, 0, 1));
+    edges.push_back(edge(1, 2, 3));
+    edges.push_back(edge(2, 4, 5));
+
     EXPECT_FALSE(isFaceConsistent(f, edges));
 }
 
 // test triangolo coerente
 TEST(UtilsTest, ConsistentTriangle) {
-    face f{{0, 1, 2}};
-    std::vector<edge> edges = {
-        {0, 1}, {1, 2}, {2, 0}
-    };
+    face f;
+    f.edge_ids = {0, 1, 2};
+
+    std::vector<edge> edges;
+    edges.push_back(edge(0, 0, 1));
+    edges.push_back(edge(1, 1, 2));
+    edges.push_back(edge(2, 2, 0));
+
     EXPECT_TRUE(isFaceConsistent(f, edges));
 }
 
-//test quadrato coerente
+// test quadrato coerente
 TEST(FaceConsistencyTest, ConsistentSquare) {
-    face f{{0, 1, 2, 3}};
-    std::vector<edge> edges = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 0}
-    };
+    face f;
+    f.edge_ids = {0, 1, 2, 3};
+
+    std::vector<edge> edges;
+    edges.push_back(edge(0, 0, 1));
+    edges.push_back(edge(1, 1, 2));
+    edges.push_back(edge(2, 2, 3));
+    edges.push_back(edge(3, 3, 0));
+
     EXPECT_TRUE(isFaceConsistent(f, edges));
 }
 
 // test spigoli invertiti
 TEST(UtilsTest, InvertedEdgeBreaksConsistency) {
-    face f{{0, 1, 2}};
-    std::vector<edge> edges = {
-        {0, 1}, // ok
-        {2, 1}, // NON ok: l'end del primo è 1, ma questo va da 2 a 1 (inverso)
-        {2, 0}  // anche questo non chiude correttamente il ciclo
-    };
+    face f;
+    f.edge_ids = {0, 1, 2};
+
+    std::vector<edge> edges;
+    edges.push_back(edge(0, 0, 1));
+    edges.push_back(edge(1, 2, 1)); // invertito
+    edges.push_back(edge(2, 2, 0));
+
     EXPECT_FALSE(isFaceConsistent(f, edges));
 }
