@@ -21,19 +21,19 @@ endif (WIN32)
 
 ## Eigen3
 find_package(Eigen3 CONFIG REQUIRED)
-list(APPEND $ProgettoPCS2025_LINKED_LIBRARIES PUBLIC Eigen3::Eigen)
+list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PUBLIC Eigen3::Eigen)
 
 ## Threads
 find_package(Threads REQUIRED)
-list(APPEND $ProgettoPCS2025_LINKED_LIBRARIES PRIVATE Threads::Threads)
+list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PRIVATE Threads::Threads)
 
 ## GTest
 find_package(GTest REQUIRED)
 
-list(APPEND $ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gtest)
-list(APPEND $ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gtest_main)
-list(APPEND $ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gmock)
-list(APPEND $ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gmock_main)
+list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gtest)
+list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gtest_main)
+list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gmock)
+list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gmock_main)
 
 ###################### Add subdirectory ##################################
 add_subdirectory(src)
@@ -44,13 +44,13 @@ list(APPEND ProgettoPCS2025_SOURCES ${src_sources})
 list(APPEND ProgettoPCS2025_HEADERS ${src_headers})
 list(APPEND ProgettoPCS2025_INCLUDE ${src_includes})
 
-list(APPEND $ProgettoPCS2025_SOURCES ${src_paraview_sources})
-list(APPEND $ProgettoPCS2025_HEADERS ${src_paraview_headers})
-list(APPEND $ProgettoPCS2025_INCLUDE ${src_paraview_includes})
+list(APPEND ProgettoPCS2025_SOURCES ${src_paraview_sources})
+list(APPEND ProgettoPCS2025_HEADERS ${src_paraview_headers})
+list(APPEND ProgettoPCS2025_INCLUDE ${src_paraview_includes})
 
-list(APPEND $ProgettoPCS2025_TEST_SOURCES ${src_test_sources})
-list(APPEND $ProgettoPCS2025_TEST_HEADERS ${src_test_headers})
-list(APPEND $ProgettoPCS2025_TEST_INCLUDE ${src_test_includes})
+list(APPEND ProgettoPCS2025_TEST_SOURCES ${src_test_sources})
+list(APPEND ProgettoPCS2025_TEST_HEADERS ${src_test_headers})
+list(APPEND ProgettoPCS2025_TEST_INCLUDE ${src_test_includes})
 
 ############################## Add executable ##################################################
 
