@@ -19,7 +19,11 @@ void buildPolyhedron(int p, int q, int b, int c, std::vector<PolyhedronMesh::ver
 
 bool sameVertex(const PolyhedronMesh::vertex& a, const PolyhedronMesh::vertex& b, double tolerance = 1e-6);
 
+bool isFaceConsistent(const PolyhedronMesh::face& face, const std::vector<PolyhedronMesh::edge>& edges, double tolerance = 1e-4);
+
 int getOrAddVertex(double x, double y, double z, std::vector<PolyhedronMesh::vertex>& vertices);
+
+int getOrAddVertex(double x, double y, double z, std::vector<PolyhedronMesh::vertex>& vertices, double tolerance);
 
 void triangulateFaces(const std::vector<PolyhedronMesh::face>& inputFaces, std::vector<PolyhedronMesh::face>& outputFaces);
 

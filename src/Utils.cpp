@@ -14,18 +14,16 @@
 using namespace std;
 using namespace PolyhedronMesh;
 
-//ordinare in cell2Ds
-//tipo di polyhedron
+//getOrAddVertex
 
 void normalize(vertex& v) {
     double len = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    if (len == 0)  {
-		return;
-	}	
+    if (len < 1e-8) return; //tolleranza
     v.x /= len;
     v.y /= len;
     v.z /= len;
 }
+
 
 void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
@@ -306,16 +304,14 @@ void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, 
 }
 
 bool sameVertex(const vertex& a, const vertex& b, double tolerance) {
-    return fabs(a.x - b.x) < tolerance && fabs(a.y - b.y) < tolerance && fabs(a.z - b.z) < tolerance;
+    return fabs(a.x - b.x) <= tolerance &&
+		   fabs(a.y - b.y) <= tolerance &&
+		   fabs(a.z - b.z) <= tolerance;
 }
 
-
-int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
-    for (auto& existing : vertices) {
-        if (sameVertex(existing, vertex{-1, x, y, z})) {
-            // Se il vertice è già presente MA non ha ancora un id valido, lo assegna ora
-            if (existing.id == -1)
-                existing.id = &existing - &vertices[0]; // o usare un contatore globale
+int getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, double tolerance) {
+    for (const auto& existing : vertices) {
+        if (sameVertex(existing, vertex{-1, x, y, z}, tolerance)) {
             return existing.id;
         }
     }
@@ -325,6 +321,9 @@ int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
     return newId;
 }
 
+int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
+    return getOrAddVertex(x, y, z, vertices, 1e-4);
+}
 
 void projectVerticesOnUnitSphere(vector<vertex>&vertices){
     for(auto& v : vertices){
@@ -342,6 +341,8 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
     vector<edge> baseEdges;
     vector<face> baseFaces;
     polyhedron basePoly;
+	
+	double tolerance = 1e-6;
 
     buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
 
@@ -381,7 +382,9 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
                 double y = alpha * A.y + beta * B.y + gamma * C.y;
                 double z = alpha * A.z + beta * B.z + gamma * C.z;
 
-                int id = getOrAddVertex(x, y, z, vertices);
+                vertex v{-1, x, y, z};
+				normalize(v);  
+				int id = getOrAddVertex(v.x, v.y, v.z, vertices, 1e-6);
                 grid[i][j] = id;
             }
         }
@@ -411,7 +414,7 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
         for (int i = 0; i < 3; ++i) {
             int a = f.vertex_ids[i];
             int b = f.vertex_ids[(i + 1) % 3];
-            int key = min(a, b) * MAX_VERTS + std::max(a, b);
+            int key = a * MAX_VERTS + b;
 
             if (edgeMap.count(key) == 0) {
                 int id = edges.size();
@@ -432,25 +435,19 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
 	poly.id = basePoly.id;
 }
 	
-bool isFaceConsistent(const face& face, const std::vector<edge>& edges) {
-    const auto& ids = face.edge_ids;
-    if (ids.size() < 3) return false;
-
-    for (size_t i = 0; i < ids.size(); ++i) {
-        size_t current = ids[i];
-        size_t next = ids[(i + 1) % ids.size()];
-        
-        if (current >= edges.size() || next >= edges.size())
-            return false;
-
-        if (edges[current].end != edges[next].origin)
-            return false; 
+bool isFaceConsistent(const face& f, const std::vector<edge>& edges, double tolerance) {
+    if (f.edge_ids.size() < 3) return false;
+    for (size_t i = 0; i < f.edge_ids.size(); ++i) {
+        int eid1 = f.edge_ids[i];
+        int eid2 = f.edge_ids[(i + 1) % f.edge_ids.size()];
+        if (eid1 >= edges.size() || eid2 >= edges.size()) return false;
+        if (edges[eid1].end != edges[eid2].origin) return false;
     }
     return true;
 }
 
-double distance(const vertex& a, const vertex &b) {
-	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z + b.z));
+double distance(const vertex& a, const vertex& b) {
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
 }
 
 void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId, int endId) {
@@ -698,3 +695,4 @@ void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& fac
     dualPoly.num_edges = dualPoly.edge_ids.size();
 }
 
+//isFaceConsistent

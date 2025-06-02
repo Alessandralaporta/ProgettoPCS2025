@@ -71,7 +71,7 @@ TEST(UtilsTest, DistanceIdenticalVertices) {
     EXPECT_DOUBLE_EQ(distance(a, b), 0.0);
 }
 
-//verifica aggiunta primo vertice inserito corrrettamente (GetOrAddVertex)
+//verifica aggiunta primo vertice inserito correttamente (GetOrAddVertex)
 TEST(UtilsTest, GetOrAddVertexAdd) {
     vector<vertex> verts;
     int id = getOrAddVertex(1.00001, 2.00001, 3.00001, verts);
@@ -230,32 +230,35 @@ TEST(UtilsTest, EdgeIdOutOfRange) {
 TEST(UtilsTest, NonConsecutiveEdges) {
     face f;
     f.edge_ids = {0, 1, 2};
+	double tolerance = 1e-6;
 
     std::vector<edge> edges;
     edges.push_back(edge(0, 0, 1));
     edges.push_back(edge(1, 2, 3));
     edges.push_back(edge(2, 4, 5));
 
-    EXPECT_FALSE(isFaceConsistent(f, edges));
+    EXPECT_FALSE(isFaceConsistent(f, edges, tolerance));
 }
 
 // test triangolo coerente
 TEST(UtilsTest, ConsistentTriangle) {
     face f;
     f.edge_ids = {0, 1, 2};
+	double tolerance = 1e-6;
 
     std::vector<edge> edges;
     edges.push_back(edge(0, 0, 1));
     edges.push_back(edge(1, 1, 2));
     edges.push_back(edge(2, 2, 0));
 
-    EXPECT_TRUE(isFaceConsistent(f, edges));
+    EXPECT_TRUE(isFaceConsistent(f, edges, tolerance));
 }
 
 // test quadrato coerente
 TEST(FaceConsistencyTest, ConsistentSquare) {
     face f;
     f.edge_ids = {0, 1, 2, 3};
+	double tolerance = 1e-6;
 
     std::vector<edge> edges;
     edges.push_back(edge(0, 0, 1));
@@ -263,18 +266,21 @@ TEST(FaceConsistencyTest, ConsistentSquare) {
     edges.push_back(edge(2, 2, 3));
     edges.push_back(edge(3, 3, 0));
 
-    EXPECT_TRUE(isFaceConsistent(f, edges));
+    EXPECT_TRUE(isFaceConsistent(f, edges, tolerance));
 }
 
 // test spigoli invertiti
 TEST(UtilsTest, InvertedEdgeBreaksConsistency) {
     face f;
     f.edge_ids = {0, 1, 2};
+	double tolerance = 1e-6;
 
     std::vector<edge> edges;
     edges.push_back(edge(0, 0, 1));
     edges.push_back(edge(1, 2, 1)); // invertito
     edges.push_back(edge(2, 2, 0));
 
-    EXPECT_FALSE(isFaceConsistent(f, edges));
+    EXPECT_FALSE(isFaceConsistent(f, edges, tolerance));
 }
+
+//getOrAddVertex

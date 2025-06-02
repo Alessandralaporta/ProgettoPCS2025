@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include "test_utils.hpp"
+#include "test_polyhedron.hpp"
+
 int main(int argc, char *argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);

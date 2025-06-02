@@ -37,6 +37,7 @@ list(APPEND ProgettoPCS2025_LINKED_LIBRARIES PRIVATE GTest::gmock_main)
 
 ###################### Add subdirectory ##################################
 add_subdirectory(src)
+list(APPEND ProgettoPCS2025_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_subdirectory(src_test)
 add_subdirectory(ExportParaview)
 
