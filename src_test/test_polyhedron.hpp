@@ -288,4 +288,3 @@ TEST(ShortestPathTest, From0to5_Icosahedron) {
     EXPECT_GE(pathEdges, 1);     
 }
 
-//GeodesicPolyhedronTest

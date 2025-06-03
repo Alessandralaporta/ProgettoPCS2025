@@ -14,7 +14,7 @@
 using namespace std;
 using namespace PolyhedronMesh;
 
-//getOrAddVertex
+//isFaceConsistent
 
 void normalize(vertex& v) {
     double len = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -42,10 +42,10 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 	};
 	
 	faces = {
-		{0, {0, 1, 2}, {0, 1, 3}},
-		{1, {0, 1, 3}, {0, 2, 4}},
-		{2, {0, 2, 3}, {1, 2, 5}},
-		{3, {1, 2, 3}, {3, 4, 5}}
+		{0, {0, 1, 2}, {0, 3, 1}},   // edge 0: 0→1, edge 3: 1→2, edge 1: 2→0
+		{1, {0, 2, 3}, {1, 5, 2}},   // edge 1: 0→2, edge 5: 2→3, edge 2: 3→0
+		{2, {0, 3, 1}, {2, 4, 0}},   // edge 2: 0→3, edge 4: 3→1, edge 0: 1→0
+		{3, {1, 2, 3}, {3, 5, 4}}    // edge 3: 1→2, edge 5: 2→3, edge 4: 3→1
 	};
 	
 	polyhedron.id = 0;
@@ -87,13 +87,14 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 	};
 		
 	faces = {
-		{0, {0, 1, 2, 3},  {0, 1, 2, 3}},
-        {1, {4, 5, 6, 7},  {4, 5, 6, 7}},
-        {2, {0, 1, 5, 4},  {0, 9, 4, 8}},
-        {3, {1, 2, 6, 5},  {1,10, 5, 9}}, 
-        {4, {2, 3, 7, 6},  {2,11, 6,10}}, 
-        {5, {3, 0, 4, 7},  {3, 8, 7,11}}
+		{0, {0, 1, 2, 3},  {0, 1, 2, 3}},     // base inferiore
+		{1, {4, 5, 6, 7},  {4, 5, 6, 7}},     // base superiore
+		{2, {0, 1, 5, 4},  {0, 9, 4, 8}},     // lato fronte
+		{3, {1, 2, 6, 5},  {1,10, 5, 9}},     // lato destra
+		{4, {2, 3, 7, 6},  {2,11, 6,10}},     // lato retro
+		{5, {3, 0, 4, 7},  {3, 8, 7,11}}      // lato sinistra
 	};
+
 	
 	polyhedron.id = 1;
     polyhedron.vertex_ids.clear();
@@ -116,7 +117,7 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
 	
 	vertices.clear(); edges.clear(); faces.clear();
 	
-	 vertices = {
+	vertices = {
         {0,  1,  0,  0},
         {1, -1,  0,  0},  
         {2,  0,  1,  0},  
@@ -132,15 +133,17 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
     };
 	
 	faces = {
-        {0, {0, 2, 4}, {0, 5, 4}},
-        {1, {2, 1, 4}, {1, 6, 5}},
-        {2, {1, 3, 4}, {2, 7, 6}},
-        {3, {3, 0, 4}, {3, 4, 7}},
-        {4, {2, 0, 5}, {0, 8, 9}},  
-        {5, {1, 2, 5}, {1, 9,10}},
-        {6, {3, 1, 5}, {2,10,11}},
-        {7, {0, 3, 5}, {3,11, 8}}
-    };
+		{0, {0, 2, 4}, {0, 5, 4}},     // 0→2, 2→4, 4→0
+		{1, {2, 1, 4}, {1, 6, 5}},     // 2→1, 1→4, 4→2
+		{2, {1, 3, 4}, {2, 7, 6}},     // 1→3, 3→4, 4→1
+		{3, {3, 0, 4}, {3, 4, 7}},     // 3→0, 0→4, 4→3
+		{4, {0, 5, 2}, {8, 9, 0}},     // 0→5, 5→2, 2→0
+		{5, {2, 5, 1}, {9,10, 1}},     // 2→5, 5→1, 1→2
+		{6, {1, 5, 3}, {10,11, 2}},    // 1→5, 5→3, 3→1
+		{7, {3, 5, 0}, {11, 8, 3}}     // 3→5, 5→0, 0→3
+	};
+
+
 	
 	polyhedron.id = 2;
     polyhedron.vertex_ids.clear();
@@ -163,9 +166,8 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
 const double phi = (1.0 + std::sqrt(5.0)) / 2.0;
 
 void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
-	
-	vertices.clear(); edges.clear(); faces.clear();
-	
+    vertices.clear(); edges.clear(); faces.clear();
+
     const float a = 1.0 / phi;
     const float b = 1.0;
 
@@ -182,48 +184,47 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
         { 5, 1, 3}, { 6, 1,12}, { 7, 1, 9}, { 8, 1,17}, { 9, 1,16},
         {10, 2, 3}, {11, 2,13}, {12, 2,10}, {13, 2,16},
         {14, 3,11}, {15, 3,17},
-        {16, 4, 8}, {17, 4,14}, {18, 4,18}, {19, 5, 9}, {20, 5,14},
-        {21, 5,19}, {22, 6,10}, {23, 6,15}, {24, 6,18}, {25, 7,11},
-        {26, 7,15}, {27, 7,19}, {28, 8,10}, {29, 9,11}
+        {16, 4, 8}, {17, 4,14}, {18, 4,18},
+        {19, 5, 9}, {20, 5,14}, {21, 5,19},
+        {22, 6,10}, {23, 6,15}, {24, 6,18},
+        {25, 7,11}, {26, 7,15}, {27, 7,19},
+        {28, 8,10}, {29, 9,11}
     };
 
+    // Vertex IDs sono stati sistemati per seguire i collegamenti effettivi degli edge
     faces = {
-        {0,  {0, 4,13,12,28},  {0, 4,13,12,28}}, 
-        {1,  {1, 6,7,8,9},     {1, 6,7,8,9}},     
-        {2,  {2,16,17,18,1},   {2,16,17,18,1}},
-        {3,  {3,9,13,11,10},   {3,9,13,11,10}},
-        {4,  {5,10,15,14,6},   {5,10,15,14,6}},
-        {5,  {7,19,20,17,16},  {7,19,20,17,16}},
-        {6,  {8,19,29,25,14},  {8,19,29,25,14}},
-        {7,  {11,12,22,23,10}, {11,12,22,23,10}},
-        {8,  {15,26,27,21,20}, {15,26,27,21,20}},
-        {9,  {18,24,23,22,16}, {18,24,23,22,16}},
-        {10, {5,3,13,11,14},   {5,3,13,11,14}}, 
-        {11, {27,26,25,24,28}, {27,26,25,24,28}} 
+        {0,  {0, 2, 10, 8, 4},     {4, 12, 28, 0, 2}},
+        {1,  {0, 12, 1, 9, 8},     {1, 6, 7, 29, 0}},
+        {2,  {4, 18, 14, 16, 8},   {18, 17, 16, 2, 16}},
+        {3,  {2, 16, 0, 12, 13},   {13, 3, 1, 6, 11}},
+        {4,  {2, 13, 3, 11, 10},   {11, 10, 14, 12, 12}},
+        {5,  {1, 17, 3, 5, 9},     {8, 15, 5, 19, 7}},
+        {6,  {5, 14, 4, 18, 19},   {20, 17, 16, 18, 21}},
+        {7,  {10, 2, 13, 6, 22},   {12, 4, 11, 23, 22}},
+        {8,  {3, 17, 1, 9, 7},     {15, 9, 8, 29, 26}},
+        {9,  {18, 6, 22, 10, 4},   {24, 22, 12, 28, 16}},
+        {10, {5, 19, 9, 7, 11},    {19, 29, 7, 27, 25}},
+        {11, {6, 23, 15, 7, 25},   {23, 26, 25, 27, 24}}
     };
-	
-	polyhedron.id = 3;
-	polyhedron.vertex_ids.clear();
-	for (size_t i = 0; i < vertices.size(); ++i) {
-		polyhedron.vertex_ids.push_back(i);
-	}
 
-	polyhedron.edge_ids.clear();
-	for (size_t i = 0; i < edges.size(); ++i) {
-		polyhedron.edge_ids.push_back(i);
-	}
-
-	polyhedron.face_ids.clear();
-	for (size_t i = 0; i < faces.size(); ++i) {
-		polyhedron.face_ids.push_back(i);
-	}
+    polyhedron.id = 3;
+    polyhedron.vertex_ids.clear();
+    for (size_t i = 0; i < vertices.size(); ++i)
+        polyhedron.vertex_ids.push_back(i);
+    polyhedron.edge_ids.clear();
+    for (size_t i = 0; i < edges.size(); ++i)
+        polyhedron.edge_ids.push_back(i);
+    polyhedron.face_ids.clear();
+    for (size_t i = 0; i < faces.size(); ++i)
+        polyhedron.face_ids.push_back(i);
 }
 
+
+
 void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
-	
-	vertices.clear(); edges.clear(); faces.clear();
-	
-	 vertices = {
+    vertices.clear(); edges.clear(); faces.clear();
+
+    vertices = {
         {0, -1,  phi, 0}, {1, 1,  phi, 0}, {2, -1, -phi, 0}, {3, 1, -phi, 0},
         {4, 0, -1,  phi}, {5, 0, 1,  phi}, {6, 0, -1, -phi}, {7, 0, 1, -phi},
         {8,  phi, 0, -1}, {9,  phi, 0, 1}, {10, -phi, 0, -1}, {11, -phi, 0, 1}
@@ -239,31 +240,39 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
     };
 
     faces = {
-        {0, {0, 1, 5}, {0, 1, 5}}, {1, {0, 4, 3}, {0, 4, 3}}, {2, {0, 3, 1}, {0, 3, 1}},
-        {3, {1, 3, 5}, {1, 3, 5}}, {4, {2, 4, 0}, {2, 4, 0}}, {5, {2, 0, 1}, {2, 0, 1}},
-        {6, {3, 0, 4}, {3, 0, 4}}, {7, {3, 1, 5}, {3, 1, 5}}, {8, {4, 0, 1}, {4, 0, 1}},
-        {9, {5, 1, 3}, {5, 1, 3}}, {10, {6, 2, 10}, {11, 13, 20}}, {11, {6, 10, 3}, {20, 14, 15}},
-        {12, {6, 3, 8}, {14, 15, 21}}, {13, {7, 2, 6}, {10, 11, 22}}, {14, {7, 6, 8}, {22, 21, 28}},
-        {15, {8, 3, 9}, {15, 17, 24}}, {16, {8, 9, 5}, {24, 25, 5}}, {17, {9, 3, 1}, {17, 7, 6}},
-        {18, {9, 1, 5}, {6, 5, 25}}, {19, {10, 2, 4}, {13, 12, 18}}
+        {0,  {0, 1, 5},     {0, 1, 5}},   // face 0: 0-1-5
+        {1,  {0, 5, 11},    {2, 19, 18}}, // 0-5-11
+        {2,  {0, 11, 4},    {18, 3, 2}},  // 0-11-4
+        {3,  {0, 4, 10},    {3, 12, 4}},  // 0-4-10
+        {4,  {0, 10, 1},    {4, 13, 0}},  // 0-10-1
+
+        {5,  {3, 2, 6},     {9, 11, 14}}, // base 2-3-6
+        {6,  {6, 3, 8},     {14, 15, 21}},// 6-3-8
+        {7,  {8, 3, 9},     {15, 17, 24}},// 8-3-9
+        {8,  {9, 3, 1},     {17, 7, 6}},  // 9-3-1
+        {9,  {1, 3, 5},     {7, 5, 6}},   // 1-3-5
+
+        {10, {2, 4, 11},    {12, 18, 13}},// back
+        {11, {2, 11, 10},   {13, 26, 20}},
+        {12, {2, 10, 6},    {20, 21, 11}},
+        {13, {6, 10, 7},    {21, 23, 22}},
+        {14, {7, 10, 11},   {23, 26, 25}},
+        {15, {7, 11, 5},    {25, 19, 27}},
+        {16, {7, 5, 9},     {27, 25, 24}},
+        {17, {9, 5, 1},     {25, 5, 6}},
+        {18, {6, 8, 3},     {21, 28, 15}},
+        {19, {8, 9, 3},     {24, 29, 15}}
     };
 
     polyhedron.id = 4;
     polyhedron.vertex_ids.clear();
-	for (size_t i = 0; i < vertices.size(); ++i) {
-		polyhedron.vertex_ids.push_back(i);
-	}
-
-	polyhedron.edge_ids.clear();
-	for (size_t i = 0; i < edges.size(); ++i) {
-		polyhedron.edge_ids.push_back(i);
-	}
-
-	polyhedron.face_ids.clear();
-	for (size_t i = 0; i < faces.size(); ++i) {
-		polyhedron.face_ids.push_back(i);
-	}
+    for (size_t i = 0; i < vertices.size(); ++i) polyhedron.vertex_ids.push_back(i);
+    polyhedron.edge_ids.clear();
+    for (size_t i = 0; i < edges.size(); ++i) polyhedron.edge_ids.push_back(i);
+    polyhedron.face_ids.clear();
+    for (size_t i = 0; i < faces.size(); ++i) polyhedron.face_ids.push_back(i);
 }
+
 
 void buildPolyhedron(int p, int q, int b, int c, std::vector<vertex> &vertices, std::vector<edge> &edges, std::vector<face> &faces, polyhedron &polyhedron) {
 	if (p < 3 || q < 3) {
@@ -436,15 +445,34 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c, vector<vertex>& vertice
 }
 	
 bool isFaceConsistent(const face& f, const std::vector<edge>& edges, double tolerance) {
-    if (f.edge_ids.size() < 3) return false;
-    for (size_t i = 0; i < f.edge_ids.size(); ++i) {
-        int eid1 = f.edge_ids[i];
-        int eid2 = f.edge_ids[(i + 1) % f.edge_ids.size()];
-        if (eid1 >= edges.size() || eid2 >= edges.size()) return false;
-        if (edges[eid1].end != edges[eid2].origin) return false;
+    int n = f.vertex_ids.size();
+    if (n < 3 || f.edge_ids.size() != n) return false;
+
+    for (int i = 0; i < n; ++i) {
+        int v_start = f.vertex_ids[i];
+        int v_end   = f.vertex_ids[(i + 1) % n];
+        int eid     = f.edge_ids[i];
+
+        if (eid >= edges.size()) return false;
+
+        const edge& e = edges[eid];
+
+        // accetta anche direzione inversa
+        bool ok = (e.origin == v_start && e.end == v_end) ||
+                  (e.origin == v_end && e.end == v_start);
+
+        if (!ok) {
+            std::cerr << "❌ Incoerenza nella faccia " << f.id << ": edge[" << eid << "] "
+                      << "non collega " << v_start << " <-> " << v_end
+                      << " (è " << e.origin << " → " << e.end << ")\n";
+            return false;
+        }
     }
+
     return true;
 }
+
+
 
 double distance(const vertex& a, const vertex& b) {
 	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));

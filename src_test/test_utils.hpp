@@ -9,6 +9,8 @@
 using namespace std;
 using namespace PolyhedronMesh;
 
+//ConsistentTriangle
+
 //test caso generale normalized
 TEST(UtilsTest, NormalizeRegularVector) {
     vertex v{0, 3.0, 0.0, 4.0};
@@ -219,7 +221,7 @@ TEST(UtilsTest, EdgeIdOutOfRange) {
     face f;
     f.edge_ids = {0, 2, 3};
 
-    std::vector<edge> edges;
+    vector<edge> edges;
     edges.push_back(edge(0, 0, 1));
     edges.push_back(edge(1, 1, 2));
 
@@ -232,7 +234,7 @@ TEST(UtilsTest, NonConsecutiveEdges) {
     f.edge_ids = {0, 1, 2};
 	double tolerance = 1e-6;
 
-    std::vector<edge> edges;
+    vector<edge> edges;
     edges.push_back(edge(0, 0, 1));
     edges.push_back(edge(1, 2, 3));
     edges.push_back(edge(2, 4, 5));
@@ -243,31 +245,38 @@ TEST(UtilsTest, NonConsecutiveEdges) {
 // test triangolo coerente
 TEST(UtilsTest, ConsistentTriangle) {
     face f;
-    f.edge_ids = {0, 1, 2};
-	double tolerance = 1e-6;
+    f.id = 0;
+    f.vertex_ids = {0, 1, 2};
+    f.edge_ids   = {0, 1, 2};
+    double tolerance = 1e-6;
 
-    std::vector<edge> edges;
-    edges.push_back(edge(0, 0, 1));
-    edges.push_back(edge(1, 1, 2));
-    edges.push_back(edge(2, 2, 0));
+    vector<edge> edges;
+    edges.emplace_back(0, 0, 1);
+    edges.emplace_back(1, 1, 2);
+    edges.emplace_back(2, 2, 0);  
 
     EXPECT_TRUE(isFaceConsistent(f, edges, tolerance));
 }
+
 
 // test quadrato coerente
 TEST(FaceConsistencyTest, ConsistentSquare) {
     face f;
-    f.edge_ids = {0, 1, 2, 3};
-	double tolerance = 1e-6;
+    f.id = 0;
+    f.vertex_ids = {0, 1, 2, 3};
+    f.edge_ids   = {0, 1, 2, 3};
+    double tolerance = 1e-6;
 
-    std::vector<edge> edges;
-    edges.push_back(edge(0, 0, 1));
-    edges.push_back(edge(1, 1, 2));
-    edges.push_back(edge(2, 2, 3));
-    edges.push_back(edge(3, 3, 0));
+    vector<edge> edges = {
+        {0, 0, 1},
+        {1, 1, 2},
+        {2, 2, 3},
+        {3, 3, 0}
+    };
 
     EXPECT_TRUE(isFaceConsistent(f, edges, tolerance));
 }
+
 
 // test spigoli invertiti
 TEST(UtilsTest, InvertedEdgeBreaksConsistency) {
