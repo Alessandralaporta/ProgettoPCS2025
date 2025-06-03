@@ -14,16 +14,16 @@ int main() {
     polyhedron poly;
 	//buildTetrahedron(vertices, edges, faces, poly);
     // buildEsahedron(vertices, edges, faces, poly);
-    buildOctahedron(vertices, edges, faces, poly);
-    // buildDodecahedron(vertices, edges, faces, poly); // ⚠️ ancora da correggere
+    //buildOctahedron(vertices, edges, faces, poly);
+     buildDodecahedron(vertices, edges, faces, poly); // ⚠️ ancora da correggere
     // buildIcosahedron(vertices, edges, faces, poly);   // ⚠️ ancora da correggere
 
     cout << "Verifica consistenza delle facce del poliedro: " << poly.id << "\n";
 
-    for (const auto& f : faces) {
-        bool consistent = isFaceConsistent(f, edges, 1e-6);
-        cout << "Faccia " << f.id << ": " << (consistent ? "✅ OK" : "❌ INCONSISTENTE") << "\n";
-    }
+    //for (const auto& f : faces) {
+    //    bool consistent = isFaceConsistent(f, edges, 1e-6);
+    //    cout << "Faccia " << f.id << ": " << (consistent ? "✅ OK" : "❌ INCONSISTENTE") << "\n";
+    //}
 	/*
 	int p = 3, q = 5, b = 2, c = 2; // esempio: classe I cubo
 	if (b == 0 && c == 0) {
