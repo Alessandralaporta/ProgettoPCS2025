@@ -10,7 +10,6 @@
 #include <map>
 #include <set>
 
-
 using namespace std;
 using namespace PolyhedronMesh;
 
@@ -21,7 +20,6 @@ void normalize(vertex& v) {
     v.y /= len;
     v.z /= len;
 }
-
 
 void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
@@ -141,8 +139,6 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
 		{7, {3, 5, 0}, {11, 8, 3}}     // 3→5, 5→0, 0→3
 	};
 
-
-	
 	polyhedron.id = 2;
     polyhedron.vertex_ids.clear();
 	for (size_t i = 0; i < vertices.size(); ++i) {
@@ -310,7 +306,6 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
     for (size_t i = 0; i < faces.size(); ++i) polyhedron.face_ids.push_back(i);
 }
 
-
 void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	if (p < 3 || q < 3) {
 		cout << "Valori non validi" << endl;
@@ -350,9 +345,7 @@ void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vecto
 }
 
 bool sameVertex(const vertex& a, const vertex& b, double tolerance) {
-    return fabs(a.x - b.x) <= tolerance &&
-		   fabs(a.y - b.y) <= tolerance &&
-		   fabs(a.z - b.z) <= tolerance;
+    return distance(a, b) <= tolerance;
 }
 
 int getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, double tolerance) {
@@ -361,6 +354,7 @@ int getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, 
             return existing.id;
         }
     }
+	
     int newId = vertices.size();
     vertex v{newId, x, y, z};
     vertices.push_back(v);
@@ -377,53 +371,148 @@ void projectVerticesOnUnitSphere(vector<vertex>&vertices){
     }
 }
 
-void buildGeodesicPolyhedron(int p, int q, int b, int c,
-                              vector<vertex>& vertices,
-                              vector<edge>& edges,
-                              vector<face>& faces,
-                              polyhedron& poly) {
+void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
     if ((p < 3 || p > 5) || (q != 3 && q != 4 && q != 5)) {
         cerr << "Tipo non supportato: p = " << p << ", q = " << q << endl;
         return;
     }
+
+    vertices.clear();
+    edges.clear();
+    faces.clear();
 
     vector<vertex> baseVertices;
     vector<edge> baseEdges;
     vector<face> baseFaces;
     polyhedron basePoly;
 
-    double tolerance = 5e-2;
     buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
 
-    // triangola tutte le facce
     vector<face> triangleFaces;
     int faceId = 0;
     for (const auto& f : baseFaces) {
-        const auto& v = f.vertex_ids;
-        if (v.size() == 3) {
-            triangleFaces.push_back({faceId++, v, {}});
-        } else if (v.size() > 3) {
-            for (size_t i = 1; i < v.size() - 1; ++i) {
-                triangleFaces.push_back({faceId++, {v[0], v[i], v[i + 1]}, {}});
+        if (f.vertex_ids.size() == 3) {
+            triangleFaces.push_back({faceId++, f.vertex_ids, {}});
+        } else {
+            for (size_t i = 1; i < f.vertex_ids.size() - 1; ++i) {
+                triangleFaces.push_back({faceId++, {f.vertex_ids[0], f.vertex_ids[i], f.vertex_ids[i + 1]}, {}});
             }
         }
     }
 
-    faces.clear();
-    vertices.clear();
-    map<pair<int, int>, int> globalGridMap;
-
-    const int N = b + c;
+    const int N = b;
+    const double tolerance = 1e-5;
 
     for (const auto& f : triangleFaces) {
         vertex A = baseVertices[f.vertex_ids[0]];
         vertex B = baseVertices[f.vertex_ids[1]];
         vertex C = baseVertices[f.vertex_ids[2]];
 
-        vector<vector<int>> grid(N + 1);
+        vector<vector<int>> grid(N + 1, vector<int>(N + 1, -1));
+
+        // Crea vertici baricentrici
+        for (int i = 0; i <= N; ++i) {
+            for (int j = 0; j <= N - i; ++j) {
+                int k = N - i - j;
+
+                double alpha = static_cast<double>(i) / N;
+                double beta  = static_cast<double>(j) / N;
+                double gamma = static_cast<double>(k) / N;
+
+                double x = alpha * A.x + beta * B.x + gamma * C.x;
+                double y = alpha * A.y + beta * B.y + gamma * C.y;
+                double z = alpha * A.z + beta * B.z + gamma * C.z;
+
+                vertex v = {-1, x, y, z};
+                normalize(v);
+                grid[i][j] = getOrAddVertex(v.x, v.y, v.z, vertices, tolerance);
+            }
+        }
+
+        // Triangola la griglia baricentrica
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N - i; ++j) {
+                int v0 = grid[i][j];
+                int v1 = grid[i + 1][j];
+                int v2 = grid[i][j + 1];
+                if (v0 >= 0 && v1 >= 0 && v2 >= 0)
+                    faces.push_back({(int)faces.size(), {v0, v1, v2}, {}});
+
+                if (i + j < N - 1) {
+                    int v3 = grid[i + 1][j + 1];
+                    if (v1 >= 0 && v2 >= 0 && v3 >= 0)
+                        faces.push_back({(int)faces.size(), {v1, v3, v2}, {}});
+                }
+            }
+        }
+    }
+
+    // Crea spigoli unici e associa agli ID facce
+    map<pair<int, int>, int> edgeMap;
+    for (auto& f : faces) {
+        for (int i = 0; i < 3; ++i) {
+            int a = f.vertex_ids[i];
+            int b = f.vertex_ids[(i + 1) % 3];
+            auto key = minmax(a, b);
+            if (!edgeMap.count(key)) {
+                int id = edges.size();
+                edges.push_back({id, key.first, key.second});
+                edgeMap[key] = id;
+            }
+            f.edge_ids.push_back(edgeMap[key]);
+        }
+    }
+
+    // Assemble il poly finale
+    poly = basePoly;
+    poly.vertex_ids.clear();
+    for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
+    poly.edge_ids.clear();
+    for (const auto& e : edges) poly.edge_ids.push_back(e.id);
+    poly.face_ids.clear();
+    for (const auto& f : faces) poly.face_ids.push_back(f.id);
+    poly.id = basePoly.id;
+}
+
+
+void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
+    if (b <= 0 || c <= 0 || b != c) {
+        cerr << "Classe II richiede b = c > 0\n";
+        return;
+    }
+
+    int N = b + c;
+    const double tolerance = 1e-6;
+    vector<vertex> baseVertices;
+    vector<edge> baseEdges;
+    vector<face> baseFaces;
+    polyhedron basePoly;
+    buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
+
+    vector<face> triangleFaces;
+    int triangleCount = 0;
+    for (const auto& f : baseFaces) {
+        if (f.vertex_ids.size() < 3) continue;
+        for (size_t i = 1; i + 1 < f.vertex_ids.size(); ++i) {
+            triangleFaces.push_back({triangleCount++, {f.vertex_ids[0], f.vertex_ids[i], f.vertex_ids[i + 1]}, {}});
+        }
+    }
+
+    cout << ">> Generati triangoli: " << triangleFaces.size() << endl;
+
+    vertices.clear();
+    edges.clear();
+    faces.clear();
+
+    for (size_t t = 0; t < triangleFaces.size(); ++t) {
+        const auto& f = triangleFaces[t];
+        vertex A = baseVertices[f.vertex_ids[0]];
+        vertex B = baseVertices[f.vertex_ids[1]];
+        vertex C = baseVertices[f.vertex_ids[2]];
+
+        vector<vector<int>> grid(N + 1, vector<int>(N + 1, -1));
 
         for (int i = 0; i <= N; ++i) {
-            grid[i].resize(N + 1 - i);
             for (int j = 0; j <= N - i; ++j) {
                 int k = N - i - j;
 
@@ -438,52 +527,68 @@ void buildGeodesicPolyhedron(int p, int q, int b, int c,
                 vertex v = {-1, x, y, z};
                 normalize(v);
 
-                int id = getOrAddVertex(v.x, v.y, v.z, vertices, tolerance);
-                grid[i][j] = id;
+                int existingId = -1;
+                for (size_t vi = 0; vi < vertices.size(); ++vi) {
+                    if (sameVertex(vertices[vi], v, tolerance)) {
+                        existingId = static_cast<int>(vi);
+                        break;
+                    }
+                }
+
+                if (existingId != -1) {
+                    grid[i][j] = existingId;
+                } else {
+                    int newId = static_cast<int>(vertices.size());
+                    v.id = newId;
+                    vertices.push_back(v);
+                    grid[i][j] = newId;
+                }
             }
         }
 
-        // costruisci triangoli dalla griglia
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N - i; ++j) {
                 int v0 = grid[i][j];
                 int v1 = grid[i + 1][j];
                 int v2 = grid[i][j + 1];
-                faces.push_back({(int)faces.size(), {v0, v1, v2}, {}});
+                faces.push_back({static_cast<int>(faces.size()), {v0, v1, v2}, {}});
 
-                if (j + i < N - 1) {
+                if (i + j < N - 1) {
                     int v3 = grid[i + 1][j + 1];
-                    faces.push_back({(int)faces.size(), {v1, v3, v2}, {}});
+                    faces.push_back({static_cast<int>(faces.size()), {v1, v3, v2}, {}});
                 }
             }
         }
     }
 
-    // costruzione spigoli
-    edges.clear();
-    map<pair<int, int>, int> edgeMap;
     for (auto& f : faces) {
+        f.edge_ids.clear();
         for (int i = 0; i < 3; ++i) {
             int a = f.vertex_ids[i];
             int b = f.vertex_ids[(i + 1) % 3];
-            pair<int, int> key = {min(a, b), max(a, b)};
-            if (edgeMap.count(key) == 0) {
-                int id = edges.size();
-                edges.push_back({id, key.first, key.second});
-                edgeMap[key] = id;
+            bool found = false;
+            for (auto& e : edges) {
+                if ((e.origin == a && e.end == b) || (e.origin == b && e.end == a)) {
+                    f.edge_ids.push_back(e.id);
+                    found = true;
+                    break;
+                }
             }
-            f.edge_ids.push_back(edgeMap[key]);
+            if (!found) {
+                int eid = static_cast<int>(edges.size());
+                edges.push_back({eid, a, b});
+                f.edge_ids.push_back(eid);
+            }
         }
     }
 
-    // aggiorna il poliedro
+    poly = basePoly;
     poly.vertex_ids.clear();
     for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
     poly.edge_ids.clear();
     for (const auto& e : edges) poly.edge_ids.push_back(e.id);
     poly.face_ids.clear();
     for (const auto& f : faces) poly.face_ids.push_back(f.id);
-    poly.id = basePoly.id;
 }
 
 bool isFaceConsistent(const face& f, const vector<edge>& edges, double tolerance) {
@@ -513,8 +618,6 @@ bool isFaceConsistent(const face& f, const vector<edge>& edges, double tolerance
 
     return true;
 }
-
-
 
 double distance(const vertex& a, const vertex& b) {
 	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
@@ -590,89 +693,6 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
             }
         }
     }
-}
-
-void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell0Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &v : vertices){
-		file << "ID: " << v.id << "\n";
-		file << "Coordinate: " << v.x << " " << v.y << " " << v.z << "\n";
-		//file << "ShortPath: " << v.ShortPath << "\n\n";
-	}
-	file.close();
-}
-
-void exportCell1Ds (const vector<edge>& edges, const string& filename)
-{
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell1Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &e : edges){
-		file << "ID: " << e.id << "\n";
-		file << "Origin: " << e.origin << "\n";
-		file << "End: " << e.end << "\n";		
-	}
-	file.close();
-}
-
-void exportCell2Ds (const vector<face>& faces, const string& filename)
-{
-	ofstream file(filename);
-	if (!file.is_open()){
-		cerr << "Errore nell'apertura del file Cell2Ds" << filename << endl;
-		return;
-	}
-	
-	for (const auto &f : faces) {
-        file << "ID: " << f.id << "\n";
-		file << "Num Vertici: " << f.vertex_ids.size() << "\n";
-		file << "Num Lati: " << f.edge_ids.size() << "\n";
-		file << "Vertici: ";
-		for (auto v : f.vertex_ids) file << v << " ";
-		file << "\n";
-		file << "Lati: ";
-		for (auto e : f.edge_ids) file << e << " ";
-		file << "\n";
-	}
-	file.close();
-}
-
-void exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename)
-{
-    ofstream file(filename);
-    if (!file.is_open()) {
-        cerr << "Errore nell'apertura del file Cell3Ds: " << filename << endl;
-        return;
-    }
-
-    for (const auto& p : polyhedra) {
-        file << "ID: " << p.id << "\n";
-        file << "Num Vertici: " << p.vertex_ids.size() << "\n";
-        file << "Num Lati: " << p.edge_ids.size() << "\n";
-        file << "Num Facce: " << p.face_ids.size() << "\n";
-
-        file << "Vertici: ";
-        for (auto v : p.vertex_ids) file << v << " ";
-        file << "\n";
-
-        file << "Lati: ";
-        for (auto e : p.edge_ids) file << e << " ";
-        file << "\n";
-
-        file << "Facce: ";
-        for (auto f : p.face_ids) file << f << " ";
-        file << "\n\n";
-    }
-
-    file.close();
 }
 
 vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<face>& faces) {
@@ -771,4 +791,85 @@ void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& fac
     dualPoly.num_edges = dualPoly.edge_ids.size();
 }
 
-//isFaceConsistent
+void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell0Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &v : vertices){
+		file << "ID: " << v.id << "\n";
+		file << "Coordinate: " << v.x << " " << v.y << " " << v.z << "\n";
+		//file << "ShortPath: " << v.ShortPath << "\n\n";
+	}
+	file.close();
+}
+
+void exportCell1Ds (const vector<edge>& edges, const string& filename)
+{
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell1Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &e : edges){
+		file << "ID: " << e.id << "\n";
+		file << "Origin: " << e.origin << "\n";
+		file << "End: " << e.end << "\n";		
+	}
+	file.close();
+}
+
+void exportCell2Ds (const vector<face>& faces, const string& filename)
+{
+	ofstream file(filename);
+	if (!file.is_open()){
+		cerr << "Errore nell'apertura del file Cell2Ds" << filename << endl;
+		return;
+	}
+	
+	for (const auto &f : faces) {
+        file << "ID: " << f.id << "\n";
+		file << "Num Vertici: " << f.vertex_ids.size() << "\n";
+		file << "Num Lati: " << f.edge_ids.size() << "\n";
+		file << "Vertici: ";
+		for (auto v : f.vertex_ids) file << v << " ";
+		file << "\n";
+		file << "Lati: ";
+		for (auto e : f.edge_ids) file << e << " ";
+		file << "\n";
+	}
+	file.close();
+}
+
+void exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename)
+{
+    ofstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Errore nell'apertura del file Cell3Ds: " << filename << endl;
+        return;
+    }
+
+    for (const auto& p : polyhedra) {
+        file << "ID: " << p.id << "\n";
+        file << "Num Vertici: " << p.vertex_ids.size() << "\n";
+        file << "Num Lati: " << p.edge_ids.size() << "\n";
+        file << "Num Facce: " << p.face_ids.size() << "\n";
+
+        file << "Vertici: ";
+        for (auto v : p.vertex_ids) file << v << " ";
+        file << "\n";
+
+        file << "Lati: ";
+        for (auto e : p.edge_ids) file << e << " ";
+        file << "\n";
+
+        file << "Facce: ";
+        for (auto f : p.face_ids) file << f << " ";
+        file << "\n\n";
+    }
+
+    file.close();
+}
