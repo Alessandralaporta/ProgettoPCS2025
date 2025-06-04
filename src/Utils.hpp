@@ -13,8 +13,6 @@ void buildOctahedron(std::vector<PolyhedronMesh::vertex>& vertices, std::vector<
 
 void buildDodecahedron(std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& polyhedron);
 
-std::vector<int> findEdgesForFace(const PolyhedronMesh::face& f, const std::vector<PolyhedronMesh::edge>& edges);
-
 void buildIcosahedron(std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& polyhedron);
 
 void buildPolyhedron(int p, int q, int b, int c, std::vector<PolyhedronMesh::vertex>& vertices, std::vector<PolyhedronMesh::edge>& edges, std::vector<PolyhedronMesh::face>& faces, PolyhedronMesh::polyhedron& polyhedron);

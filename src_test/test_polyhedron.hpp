@@ -103,20 +103,20 @@ void testGeodesicCounts(int p, int q, int b, int c) {
 
 //dovrebbe funzionare anche con ClassI_3_5_3_0 e ClassII_3_5_3_3 e altri valori, da verificare!
 //e ovviamente dovrebbe funzionare anche per tutti i solidi
-TEST(GeodesicPolyhedronTest, ClassI_3_5_1_0) {
-    testGeodesicCounts(3, 5, 1, 0);
+TEST(GeodesicPolyhedronTest, ClassI_3_4_1_0) {
+    testGeodesicCounts(3, 4, 1, 0);
 }
 
-TEST(GeodesicPolyhedronTest, ClassII_3_5_1_1) {
-    testGeodesicCounts(3, 5, 1, 1);
+TEST(GeodesicPolyhedronTest, ClassII_3_4_1_1) {
+    testGeodesicCounts(3, 4, 1, 1);
 }
 
-TEST(GeodesicPolyhedronTest, ClassI_3_5_2_0) {
-    testGeodesicCounts(3, 5, 2, 0);
+TEST(GeodesicPolyhedronTest, ClassI_3_4_2_0) {
+    testGeodesicCounts(3, 4, 2, 0);
 }
 
-TEST(GeodesicPolyhedronTest, ClassII_3_5_2_2) {
-    testGeodesicCounts(3, 5, 2, 2);
+TEST(GeodesicPolyhedronTest, ClassII_3_4_2_2) {
+    testGeodesicCounts(3, 4, 2, 2);
 }
 
 //test duali
