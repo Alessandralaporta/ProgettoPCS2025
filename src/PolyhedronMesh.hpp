@@ -78,6 +78,10 @@ struct polyhedron {
     vector<int> vertex_ids;
     vector<int> edge_ids;
     vector<int> face_ids;
+    vector<double> vertices_short_path;
+    vector<double> edges_short_path;
+    vector<vector<double>> Cell0DCoordinates;
+    vector<pair<int, int>> Cell1DExtrema;
     polyhedron() : id(-1), num_vertices(0), num_edges(0), num_faces(0) {}
     polyhedron(int _id) : id(_id), num_vertices(0), num_edges(0), num_faces(0) {}
 };

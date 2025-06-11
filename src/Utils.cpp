@@ -194,7 +194,7 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
 	};
 
     // Costruzione delle facce
-    for (int i = 0; i < vertex_id_faces.size(); ++i) {
+    for (size_t i = 0; i < vertex_id_faces.size(); ++i) {
         face f;
         f.id = i;
         f.vertex_ids = vertex_id_faces[i];
@@ -260,7 +260,7 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
     };
 
     // Costruzione delle facce
-    for (int i = 0; i < vertex_id_faces.size(); ++i) {
+    for (size_t i = 0; i < vertex_id_faces.size(); ++i) {
         face f;
         f.id = i;
         f.vertex_ids = vertex_id_faces[i];
@@ -873,3 +873,54 @@ void exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename)
 
     file.close();
 }
+
+void build_UCD(PolyhedronMesh::polyhedron& Polyhedron)
+{
+    bool flag = false;
+    unsigned int ctr = 0;
+    while (!flag && ctr < Polyhedron.NumCell0D)
+    {
+        if (Polyhedron.vertices_short_path[ctr] == 1.0)
+        {
+            flag = true;
+        }
+        else
+        {
+            ctr++;
+        }
+    }
+
+    if (!flag)
+    {
+        Gedim::UCDUtilities utilities;
+        {
+            utilities.ExportPoints("./Cell0D.inp", Polyhedron.Cell0DCoordinates);
+            utilities.ExportSegments("./Cell1D.inp", Polyhedron.Cell0DCoordinates, polyhedron.Cell1DExtrema);
+        }
+    }
+    else
+    {
+        Gedim::UCDProperty<double> vertices_property;
+        vertices_property.NumComponents = 1;
+        const double* ptr1 = Polyhedron.vertices_short_path.data();
+        vertices_property.Data = ptr1;
+        vertices_property.Label = "Visited Nodes";
+        vector<Gedim::UCDProperty<double>> vertices_properties_UCD = { vertices_property };
+
+        Gedim::UCDProperty<double> edges_property;
+        edges_property.NumComponents = 1;
+        const double* ptr2 = Polyhedron.edges_short_path.data();
+        edges_property.Data = ptr2;
+        edges_property.Label = "Visited Edges";
+        vector<Gedim::UCDProperty<double>> edges_properties_UCD = { edges_property };
+
+        Gedim::UCDUtilities utilities;
+        {
+            utilities.ExportPoints("./Cell0D.inp", Polyhedron.Cell0DCoordinates, vertices_properties_UCD);
+            utilities.ExportSegments("./Cell1D.inp", Polyhedron.Cell0DCoordinates, Polyhedron.Cell1DExtrema, vertices_properties_UCD, edges_properties_UCD);
+        }
+    }
+
+}
+
+

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "PolyhedronMesh.hpp"
+#include "UCDUtilities.hpp"
 
 void normalize(PolyhedronMesh::vertex& v);
 
@@ -48,3 +49,5 @@ void projectVerticesOnUnitSphere(std::vector<PolyhedronMesh::vertex> & vertices)
 std::vector<PolyhedronMesh::vertex> calculateCentroids(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::face>& faces);
 
 void buildDualPolyhedron(const vector<PolyhedronMesh::vertex>& vertices, const vector<PolyhedronMesh::face>& faces, const PolyhedronMesh::polyhedron& original, vector<PolyhedronMesh::vertex>& dualVertices, vector<PolyhedronMesh::face>& dualFaces, PolyhedronMesh::polyhedron& dualPoly);
+void build_UCD(PolyhedronMesh::polyhedron& Polyhedron);
+
