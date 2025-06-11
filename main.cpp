@@ -4,10 +4,10 @@
 #include "Utils.hpp"
 #include "PolyhedronMesh.hpp"
 
-using namespace std;
-using namespace PolyhedronMesh;
-
 int main() {
+	using namespace std;
+	using namespace PolyhedronMesh;
+	
 	vector<vertex> vertices;
     vector<edge> edges;
     vector<face> faces;
@@ -15,19 +15,30 @@ int main() {
 	//buildTetrahedron(vertices, edges, faces, poly);
     // buildEsahedron(vertices, edges, faces, poly);
     //buildOctahedron(vertices, edges, faces, poly);
-     buildDodecahedron(vertices, edges, faces, poly); 
+    //buildDodecahedron(vertices, edges, faces, poly); 
     // buildIcosahedron(vertices, edges, faces, poly);   
 
-	/*
-	int p = 3, q = 5, b = 2, c = 2; // esempio: classe I cubo
+	int p = 3, q = 5, b = 3, c = 0;
 	if (b == 0 && c == 0) {
         buildPolyhedron(p, q, b, c, vertices, edges, faces, poly);  // diretto
     } else {
-        buildGeodesicPolyhedron(p, q, b, c, vertices, edges, faces, poly);  // geodesico
-        projectVerticesOnUnitSphere(vertices);
+        buildClassIGeodesic(p, q, b, vertices, edges, faces, poly);  // geodesico
+        //projectVerticesOnUnitSphere(vertices);
     }
+
+    cout << "Geometria costruita: " << vertices.size() << " vertici, "
+         << edges.size() << " spigoli, " << faces.size() << " facce\n";
+
+    int startId = 0;
+    int endId = vertices.size() / 2;  // metà arbitraria
+    findShortestPath(vertices, edges, startId, endId);
+
+    string outputDirectory = ".";
+    exportToParaview(vertices, edges, outputDirectory);
+
+    cout << "Esportazione completata in: " << outputDirectory << endl;
 	
-	//buildDualPolyhedron(vertices, faces, original, dualVertices, dualFaces, dualPoly);
+	/*buildDualPolyhedron(vertices, faces, original, dualVertices, dualFaces, dualPoly);
 	exportCell0Ds(vertices, "Cell0Ds.txt");
 	exportCell1Ds(edges, "Cell1Ds.txt");
 	exportCell2Ds(faces, "Cell2Ds.txt");

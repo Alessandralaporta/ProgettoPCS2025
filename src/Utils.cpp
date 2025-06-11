@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <Eigen/Dense>
+#include "UCDUtilities.hpp"
+
 
 using namespace std;
 using namespace PolyhedronMesh;
@@ -194,7 +197,7 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
 	};
 
     // Costruzione delle facce
-    for (size_t i = 0; i < vertex_id_faces.size(); ++i) {
+    for (int i = 0; i < vertex_id_faces.size(); ++i) {
         face f;
         f.id = i;
         f.vertex_ids = vertex_id_faces[i];
@@ -260,7 +263,7 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
     };
 
     // Costruzione delle facce
-    for (size_t i = 0; i < vertex_id_faces.size(); ++i) {
+    for (int i = 0; i < vertex_id_faces.size(); ++i) {
         face f;
         f.id = i;
         f.vertex_ids = vertex_id_faces[i];
@@ -874,53 +877,52 @@ void exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename)
     file.close();
 }
 
-void build_UCD(PolyhedronMesh::polyhedron& Polyhedron)
-{
-    bool flag = false;
-    unsigned int ctr = 0;
-    while (!flag && ctr < Polyhedron.NumCell0D)
-    {
-        if (Polyhedron.vertices_short_path[ctr] == 1.0)
-        {
-            flag = true;
-        }
-        else
-        {
-            ctr++;
-        }
+void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges, const string& outputDirectory) {
+    using namespace Gedim;
+
+    UCDUtilities exporter;
+
+    // Vertici
+    Eigen::MatrixXd points(3, vertices.size());
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        points(0, i) = vertices[i].x;
+        points(1, i) = vertices[i].y;
+        points(2, i) = vertices[i].z;
     }
 
-    if (!flag)
-    {
-        Gedim::UCDUtilities utilities;
-        {
-            utilities.ExportPoints("./Cell0D.inp", Polyhedron.Cell0DCoordinates);
-            utilities.ExportSegments("./Cell1D.inp", Polyhedron.Cell0DCoordinates, polyhedron.Cell1DExtrema);
-        }
-    }
-    else
-    {
-        Gedim::UCDProperty<double> vertices_property;
-        vertices_property.NumComponents = 1;
-        const double* ptr1 = Polyhedron.vertices_short_path.data();
-        vertices_property.Data = ptr1;
-        vertices_property.Label = "Visited Nodes";
-        vector<Gedim::UCDProperty<double>> vertices_properties_UCD = { vertices_property };
+    Eigen::VectorXi pointMaterials = Eigen::VectorXi::Zero(vertices.size());
 
-        Gedim::UCDProperty<double> edges_property;
-        edges_property.NumComponents = 1;
-        const double* ptr2 = Polyhedron.edges_short_path.data();
-        edges_property.Data = ptr2;
-        edges_property.Label = "Visited Edges";
-        vector<Gedim::UCDProperty<double>> edges_properties_UCD = { edges_property };
+    UCDProperty<double> vertex_prop;
+    vertex_prop.NumComponents = 1;
+    vertex_prop.Label = "Visited Nodes";
+    vertex_prop.UnitLabel = "";
+    vector<double> vdata(vertices.size());
+    for (size_t i = 0; i < vertices.size(); ++i)
+        vdata[i] = vertices[i].ShortPath;
+    vertex_prop.Data = vdata.data();
+    vector<UCDProperty<double>> pointProps = { vertex_prop };
 
-        Gedim::UCDUtilities utilities;
-        {
-            utilities.ExportPoints("./Cell0D.inp", Polyhedron.Cell0DCoordinates, vertices_properties_UCD);
-            utilities.ExportSegments("./Cell1D.inp", Polyhedron.Cell0DCoordinates, Polyhedron.Cell1DExtrema, vertices_properties_UCD, edges_properties_UCD);
-        }
-    }
+    string pointFile = outputDirectory + "/vertices.inp";
+    exporter.ExportPoints(pointFile, points, pointProps, pointMaterials);
+	
+	Eigen::MatrixXi segments(2, edges.size());
+	for (size_t i = 0; i < edges.size(); ++i) {
+		segments(0, i) = edges[i].origin;
+		segments(1, i) = edges[i].end;
+	}
 
+	Eigen::VectorXi edgeMaterials = Eigen::VectorXi::Zero(edges.size());
+
+	UCDProperty<double> edge_prop;
+	edge_prop.NumComponents = 1;
+	edge_prop.Label = "Visited Edges";
+	edge_prop.UnitLabel = "";
+	vector<double> edata(edges.size());
+	for (size_t i = 0; i < edges.size(); ++i)
+		edata[i] = edges[i].ShortPath;
+	edge_prop.Data = edata.data();
+	vector<UCDProperty<double>> edgeProps = { edge_prop };
+
+	string edgeFile = outputDirectory + "/edges.inp";
+	exporter.ExportSegments(edgeFile, points, segments, pointProps, edgeProps, edgeMaterials);
 }
-
-

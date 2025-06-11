@@ -48,6 +48,6 @@ void projectVerticesOnUnitSphere(std::vector<PolyhedronMesh::vertex> & vertices)
 
 std::vector<PolyhedronMesh::vertex> calculateCentroids(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::face>& faces);
 
-void buildDualPolyhedron(const vector<PolyhedronMesh::vertex>& vertices, const vector<PolyhedronMesh::face>& faces, const PolyhedronMesh::polyhedron& original, vector<PolyhedronMesh::vertex>& dualVertices, vector<PolyhedronMesh::face>& dualFaces, PolyhedronMesh::polyhedron& dualPoly);
-void build_UCD(PolyhedronMesh::polyhedron& Polyhedron);
+void buildDualPolyhedron(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::face>& faces, const PolyhedronMesh::polyhedron& original, std::vector<PolyhedronMesh::vertex>& dualVertices, std::vector<PolyhedronMesh::face>& dualFaces, PolyhedronMesh::polyhedron& dualPoly);
 
+void exportToParaview(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::edge>& edges, const std::string& outputDirectory);
