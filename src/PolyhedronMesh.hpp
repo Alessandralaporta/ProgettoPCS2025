@@ -13,26 +13,6 @@ struct vertex {
 	int ShortPath = 0;
     vertex(): id(-1),x(0.0),y(0.0),z(0.0){}
     vertex(int _id, double _x, double _y, double _z) : id(_id), x(_x), y(_y), z(_z){}
-    //operatore somma vettoriale
-    vertex operator+(const vertex& other) const {
-        return {-1, x + other.x, y + other.y, z + other.z};
-    }
-    //moltiplicazione per scalare
-    vertex operator*(double scalar) const{
-        return{-1, x * scalar, y * scalar, z * scalar };
-    }
-    // sottrazione vettoriale
-    vertex operator-(const vertex& other)const {
-        return {-1, x - other.x, y - other.y, z - other.z};
-    }
-    //prodotto scalare
-    double dot(const vertex& other) const {
-        return  x * other.x + y * other.y + z * other.z;
-    }
-    // prodotto vettoriale
-    vertex cross(const vertex& other) const {
-        return {-1, y * other.z - z * other.y, z * other.x - x*other.z, x *other.y - y*other.x};
-    }
     //lunghezza del vettore
     double length() const {
         return sqrt(x*x + y*y + z*z);

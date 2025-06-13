@@ -16,15 +16,15 @@
 using namespace std;
 using namespace PolyhedronMesh;
 
-void normalize(vertex& v) {
+void normalize(vertex& v) { //O(1)
     double len = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    if (len < 1e-8) return; //tolleranza
+    if (len < 1e-8) return; 
     v.x /= len;
     v.y /= len;
     v.z /= len;
 }
 
-void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
+void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(v+e+f), O(1) con dati piccoli
 	
 	vertices.clear(); edges.clear(); faces.clear();
 	
@@ -41,10 +41,10 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 	};
 	
 	faces = {
-		{0, {0, 1, 2}, {0, 3, 1}},   // edge 0: 0→1, edge 3: 1→2, edge 1: 2→0
-		{1, {0, 2, 3}, {1, 5, 2}},   // edge 1: 0→2, edge 5: 2→3, edge 2: 3→0
-		{2, {0, 3, 1}, {2, 4, 0}},   // edge 2: 0→3, edge 4: 3→1, edge 0: 1→0
-		{3, {1, 2, 3}, {3, 5, 4}}    // edge 3: 1→2, edge 5: 2→3, edge 4: 3→1
+		{0, {0, 1, 2}, {0, 3, 1}},  
+		{1, {0, 2, 3}, {1, 5, 2}},   
+		{2, {0, 3, 1}, {2, 4, 0}},   
+		{3, {1, 2, 3}, {3, 5, 4}}    
 	};
 	
 	polyhedron.id = 0;
@@ -64,7 +64,7 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 	}
 }
 
-void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
+void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(v+e+f), O(1) con dati piccoli
 	
 	vertices.clear(); edges.clear(); faces.clear();
 	
@@ -86,12 +86,12 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 	};
 		
 	faces = {
-		{0, {0, 1, 2, 3},  {0, 1, 2, 3}},     // base inferiore
-		{1, {4, 5, 6, 7},  {4, 5, 6, 7}},     // base superiore
-		{2, {0, 1, 5, 4},  {0, 9, 4, 8}},     // lato fronte
-		{3, {1, 2, 6, 5},  {1,10, 5, 9}},     // lato destra
-		{4, {2, 3, 7, 6},  {2,11, 6,10}},     // lato retro
-		{5, {3, 0, 4, 7},  {3, 8, 7,11}}      // lato sinistra
+		{0, {0, 1, 2, 3},  {0, 1, 2, 3}},   
+		{1, {4, 5, 6, 7},  {4, 5, 6, 7}},   
+		{2, {0, 1, 5, 4},  {0, 9, 4, 8}},   
+		{3, {1, 2, 6, 5},  {1,10, 5, 9}},   
+		{4, {2, 3, 7, 6},  {2,11, 6,10}},   
+		{5, {3, 0, 4, 7},  {3, 8, 7,11}}    
 	};
 
 	
@@ -112,7 +112,7 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 	}
 }
 
-void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
+void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(v+e+f), O(1) con dati piccoli
 	
 	vertices.clear(); edges.clear(); faces.clear();
 	
@@ -160,138 +160,126 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
 	
 }
 
-const double phi = (1.0 + sqrt(5.0)) / 2.0;
-
 void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
-    vertices.clear();
-    edges.clear();
-    faces.clear();
+    vertices.clear(); edges.clear(); faces.clear();
 
     const double phi = (1.0 + sqrt(5.0)) / 2.0;
-    const double a = 1.0 / phi;
-    const double b = 1.0;
 
-    // Vertici numerati da 0 a 19
-    vertices = {
-        { 0,  b,  b,  b}, { 1,  b,  b, -b}, { 2,  b, -b,  b}, { 3,  b, -b, -b},
-        { 4, -b,  b,  b}, { 5, -b,  b, -b}, { 6, -b, -b,  b}, { 7, -b, -b, -b},
-        { 8,  0,  a,  phi}, { 9,  0,  a, -phi}, {10,  0, -a,  phi}, {11,  0, -a, -phi},
-        {12,  a,  phi, 0}, {13,  a, -phi, 0}, {14, -a,  phi, 0}, {15, -a, -phi, 0},
-        {16,  phi, 0,  a}, {17,  phi, 0, -a}, {18, -phi, 0,  a}, {19, -phi, 0, -a}
+    vector<Eigen::Vector3d> raw = {
+        {-1, -1, -1}, {-1, -1,  1}, {-1,  1, -1}, {-1,  1,  1},
+        { 1, -1, -1}, { 1, -1,  1}, { 1,  1, -1}, { 1,  1,  1},
+        { 0, -1/phi, -phi}, { 0, -1/phi, phi}, { 0, 1/phi, -phi}, { 0, 1/phi, phi},
+        {-1/phi, -phi, 0}, { 1/phi, -phi, 0}, {-1/phi, phi, 0}, { 1/phi, phi, 0},
+        {-phi, 0, -1/phi}, { phi, 0, -1/phi}, {-phi, 0, 1/phi}, { phi, 0, 1/phi}
     };
 
-    // Facce: ogni faccia ha 5 vertici
-	vector<vector<int>> vertex_id_faces = {
-		{0, 1, 2, 3, 4},
-		{0, 5, 10, 6, 1},
-		{1, 6, 11, 7, 2},
-		{2, 7, 12, 8, 3},
-		{3, 8, 13, 9, 4},
-		{4, 9, 14, 5, 0},
-		{15, 10, 5, 14, 19},
-		{16, 11, 6, 10, 15},
-		{17, 12, 7, 11, 16},
-		{18, 13, 8, 12, 17},
-		{19, 14, 9, 13, 18},
-		{19, 18, 17, 16, 15}
-	};
+    for (size_t i = 0; i < raw.size(); ++i) {
+        raw[i].normalize();
+        vertices.push_back({static_cast<int>(i), raw[i][0], raw[i][1], raw[i][2]});
+    }
 
-    // Costruzione delle facce
-    for (int i = 0; i < vertex_id_faces.size(); ++i) {
+    vector<vector<int>> faceVertices = {
+        {0, 8, 4, 14, 16},
+        {0, 16, 2, 10, 12},
+        {0, 12, 1, 9, 8},
+        {1, 17, 3, 10, 12},
+        {1, 9, 5, 19, 17},
+        {3, 17, 19, 7, 15},
+        {3, 15, 2, 16, 10},
+        {2, 15, 6, 18, 14},
+        {4, 8, 9, 5, 13},
+        {4, 13, 6, 15, 14},
+        {5, 13, 6, 18, 19},
+        {7, 19, 18, 6, 15}
+    };
+
+    for (size_t i = 0; i < faceVertices.size(); ++i) {
         face f;
-        f.id = i;
-        f.vertex_ids = vertex_id_faces[i];
+        f.id = static_cast<int>(i);
+        f.vertex_ids = faceVertices[i];
         faces.push_back(f);
     }
 
-    // Set per evitare spigoli duplicati
-    set<pair<int, int>> edgeSet;
+    // CORRETTA costruzione spigoli unici
+    map<pair<int, int>, int> edgeMap;
+	for (auto& f : faces) {
+		f.edge_ids.clear();
+		int n = f.vertex_ids.size();
+		for (int i = 0; i < n; ++i) {
+			int a = f.vertex_ids[i];
+			int b = f.vertex_ids[(i + 1) % n];
+			auto key = std::minmax(a, b); // importante usare ordinati
 
-    // Costruzione degli spigoli unici
-    for (auto& f : faces) {
-        f.edge_ids.clear();
-        int n = f.vertex_ids.size();
-        for (int i = 0; i < n; ++i) {
-            int a = f.vertex_ids[i];
-            int b = f.vertex_ids[(i + 1) % n];
-            auto key = minmax(a, b);  // Ordina i vertici per evitare duplicati
+			int eid;
+			if (edgeMap.count(key)) {
+				eid = edgeMap[key];
+			} else {
+				eid = static_cast<int>(edges.size());
+				edges.push_back({eid, key.first, key.second});
+				edgeMap[key] = eid;
+			}
 
-            // Se l'edge non è stato visto, aggiungilo al set
-            if (edgeSet.count(key) == 0) {
-                edgeSet.insert(key);  // Aggiungi lo spigolo al set
-                edges.push_back({int(edges.size()), key.first, key.second});  // Crea un edge e aggiungilo a 'edges'
-            }
+			f.edge_ids.push_back(eid);
+		}
+	}
 
-            // Trova l'ID dello spigolo corrispondente
-            for (size_t j = 0; j < edges.size(); ++j) {
-                if (minmax(edges[j].origin, edges[j].end) == key) {
-                    f.edge_ids.push_back(j);
-                    break;
-                }
-            }
-        }
-    }
 
-    // Popolamento finale del polyhedron
+    // Riempie polyhedron
     polyhedron.id = 3;
     polyhedron.vertex_ids.clear();
-    for (size_t i = 0; i < vertices.size(); ++i) polyhedron.vertex_ids.push_back(i);
+    for (const auto& v : vertices)
+        polyhedron.vertex_ids.push_back(v.id);
     polyhedron.edge_ids.clear();
-    for (size_t i = 0; i < edges.size(); ++i) polyhedron.edge_ids.push_back(i);
+    for (const auto& e : edges)
+        polyhedron.edge_ids.push_back(e.id);
     polyhedron.face_ids.clear();
-    for (size_t i = 0; i < faces.size(); ++i) polyhedron.face_ids.push_back(i);
+    for (const auto& f : faces)
+        polyhedron.face_ids.push_back(f.id);
 }
+
 
 void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
     vertices.clear(); edges.clear(); faces.clear();
 
     const double phi = (1.0 + sqrt(5.0)) / 2.0;
 
-    // Vertici numerati da 0 a 11
-    vertices = {
-        { 0, -1,  phi, 0}, { 1,  1,  phi, 0}, { 2, -1, -phi, 0}, { 3,  1, -phi, 0},
-        { 4,  0, -1,  phi}, { 5,  0,  1,  phi}, { 6,  0, -1, -phi}, { 7,  0,  1, -phi},
-        { 8,  phi, 0, -1}, { 9,  phi, 0,  1}, {10, -phi, 0, -1}, {11, -phi, 0,  1}
+    vector<Eigen::Vector3d> points = {
+        { 0,  1,  phi}, { 0, -1,  phi}, { phi, 0, 1}, { 1,  phi, 0}, {-1,  phi, 0}, {-phi, 0, 1},
+        { 1, -phi, 0}, { phi, 0, -1}, { 0, 1, -phi}, {-phi, 0, -1}, {-1, -phi, 0}, { 0, -1, -phi}
     };
 
-    // Definizione delle 20 facce triangolari (solo vertex_ids)
-    vector<vector<int>> vertex_id_faces = {
-        {0, 1, 5}, {0, 5,11}, {0,11,4}, {0,4,10}, {0,10,1},
-        {1,9,5},  {5,9,7},  {5,7,11}, {11,7,3}, {11,3,4},
-        {4,3,6},  {4,6,10}, {10,6,2}, {10,2,1}, {1,2,9},
-        {9,2,8},  {9,8,7},  {7,8,3},  {3,8,6},  {6,8,2}
+    for (size_t i = 0; i < points.size(); ++i) {
+        Eigen::Vector3d p = points[i].normalized();
+        vertices.push_back({static_cast<int>(i), p[0], p[1], p[2]});
+    }
+
+    vector<vector<int>> faceVertices = {
+        {0, 1, 2}, {0, 2, 3}, {0, 3, 4}, {0, 4, 5}, {0, 5, 1},
+        {1, 6, 2}, {2, 6, 7}, {2, 7, 3}, {3, 7, 8}, {3, 8, 4},
+        {4, 8, 9}, {4, 9, 5}, {5, 9,10}, {5,10, 1}, {1,10, 6},
+        {11, 6,10}, {11, 7, 6}, {11, 8, 7}, {11, 9, 8}, {11,10,9}
     };
 
-    // Costruzione delle facce
-    for (int i = 0; i < vertex_id_faces.size(); ++i) {
+    for (size_t i = 0; i < faceVertices.size(); ++i) {
         face f;
-        f.id = i;
-        f.vertex_ids = vertex_id_faces[i];
+        f.id = static_cast<int>(i);
+        f.vertex_ids = faceVertices[i];
         faces.push_back(f);
     }
 
-    // Set per evitare spigoli duplicati
     set<pair<int, int>> edgeSet;
-
-    // Costruzione degli spigoli unici e assegnazione a ogni faccia
     for (auto& f : faces) {
         f.edge_ids.clear();
-        int n = f.vertex_ids.size();
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < 3; ++i) {
             int a = f.vertex_ids[i];
-            int b = f.vertex_ids[(i + 1) % n];
-            auto key = minmax(a, b);  // Ordina per evitare duplicati
-
-            // Aggiungi solo se lo spigolo non esiste ancora
-            if (edgeSet.count(key) == 0) {
-                int eid = edges.size();
-                edges.push_back({eid, key.first, key.second});
+            int b = f.vertex_ids[(i + 1) % 3];
+            auto key = std::minmax(a, b);
+            if (!edgeSet.count(key)) {
                 edgeSet.insert(key);
+                edges.push_back({static_cast<int>(edges.size()), key.first, key.second});
             }
-
-            // Trova e assegna l'ID dello spigolo a questa faccia
             for (const auto& e : edges) {
-                if (minmax(e.origin, e.end) == key) {
+                if (std::minmax(e.origin, e.end) == key) {
                     f.edge_ids.push_back(e.id);
                     break;
                 }
@@ -299,17 +287,19 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
         }
     }
 
-    // Popolamento finale del polyhedron
     polyhedron.id = 4;
     polyhedron.vertex_ids.clear();
-    for (size_t i = 0; i < vertices.size(); ++i) polyhedron.vertex_ids.push_back(i);
+    for (size_t i = 0; i < vertices.size(); ++i)
+        polyhedron.vertex_ids.push_back(i);
     polyhedron.edge_ids.clear();
-    for (size_t i = 0; i < edges.size(); ++i) polyhedron.edge_ids.push_back(i);
+    for (size_t i = 0; i < edges.size(); ++i)
+        polyhedron.edge_ids.push_back(i);
     polyhedron.face_ids.clear();
-    for (size_t i = 0; i < faces.size(); ++i) polyhedron.face_ids.push_back(i);
+    for (size_t i = 0; i < faces.size(); ++i)
+        polyhedron.face_ids.push_back(i);
 }
 
-void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
+void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(1)
 	if (p < 3 || q < 3) {
 		cout << "Valori non validi" << endl;
 	}
@@ -347,11 +337,15 @@ void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vecto
 	}
 }
 
-bool sameVertex(const vertex& a, const vertex& b, double tolerance) {
+double distance(const vertex& a, const vertex& b) { // O(1)
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+}
+
+bool sameVertex(const vertex& a, const vertex& b, double tolerance) { // O(1)
     return distance(a, b) <= tolerance;
 }
 
-int getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, double tolerance) {
+int getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, double tolerance) { // O(n)
     for (const auto& existing : vertices) {
         if (sameVertex(existing, vertex{-1, x, y, z}, tolerance)) {
             return existing.id;
@@ -364,17 +358,17 @@ int getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, 
     return newId;
 }
 
-int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
+int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) { 
     return getOrAddVertex(x, y, z, vertices, 1e-4);
 }
 
-void projectVerticesOnUnitSphere(vector<vertex>&vertices){
+void projectVerticesOnUnitSphere(vector<vertex>&vertices) { // O(1)
     for(auto& v : vertices){
         normalize(v);
     }
 }
 
-void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
+void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) { // O(n^4)
     if ((p < 3 || p > 5) || (q != 3 && q != 4 && q != 5)) {
         cerr << "Tipo non supportato: p = " << p << ", q = " << q << endl;
         return;
@@ -397,7 +391,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         if (f.vertex_ids.size() == 3) {
             triangleFaces.push_back({faceId++, f.vertex_ids, {}});
         } else {
-            for (size_t i = 1; i < f.vertex_ids.size() - 1; ++i) {
+            for (size_t i = 1; i < f.vertex_ids.size() - 1; ++i) { // prende il primo vertice fisso e crea triangoli con le coppie successive di vertici, Alla fine ottieni solo facce triangolari, tutte pronte per la suddivisione.
                 triangleFaces.push_back({faceId++, {f.vertex_ids[0], f.vertex_ids[i], f.vertex_ids[i + 1]}, {}});
             }
         }
@@ -476,7 +470,6 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
     for (const auto& f : faces) poly.face_ids.push_back(f.id);
     poly.id = basePoly.id;
 }
-
 
 void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
     if (b <= 0 || c <= 0 || b != c) {
@@ -622,10 +615,6 @@ bool isFaceConsistent(const face& f, const vector<edge>& edges, double tolerance
     return true;
 }
 
-double distance(const vertex& a, const vertex& b) {
-	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
-}
-
 void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId, int endId) {
     int N = vertices.size();
     vector<double> dist(N, std::numeric_limits<double>::infinity());
@@ -696,6 +685,8 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
             }
         }
     }
+    cout << "Numero di lati nel cammino minimo: " << edgeCount << endl;
+    cout << "Somma delle lunghezze: " << totalLength << endl;
 }
 
 vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<face>& faces) {
@@ -794,7 +785,7 @@ void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& fac
     dualPoly.num_edges = dualPoly.edge_ids.size();
 }
 
-void exportCell0Ds (const vector<vertex>& vertices, const string& filename) {
+void exportCell0Ds (const vector<vertex>& vertices, const string& filename) { // O(n)
 	ofstream file(filename);
 	if (!file.is_open()){
 		cerr << "Errore nell'apertura del file Cell0Ds" << filename << endl;
@@ -877,7 +868,7 @@ void exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename)
     file.close();
 }
 
-void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges, const string& outputDirectory) {
+void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges, const string& outputDirectory) { // O(n+m)
     using namespace Gedim;
 
     UCDUtilities exporter;
@@ -926,3 +917,5 @@ void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges,
 	string edgeFile = outputDirectory + "/edges.inp";
 	exporter.ExportSegments(edgeFile, points, segments, pointProps, edgeProps, edgeMaterials);
 }
+
+//length
