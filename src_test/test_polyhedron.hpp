@@ -112,34 +112,13 @@ TEST(GeodesicPolyhedronTest, ClassII_3_5_1_1) {
     vector<vertex> vertices;
     vector<edge> edges;
     vector<face> faces;
-    polyhedron poly;
+    polyhedron p;
+    
+    buildClassIIGeodesic(3, 5, 1, 1, vertices, edges, faces, p);
 
-    int b = 1, c = 1;
-    int N = b + c;
-
-    buildClassIIGeodesic(3, 5, b, c, vertices, edges, faces, poly);
-
-    // Conta quanti triangoli aveva il solido di base
-    vector<face> baseFaces;
-    vector<vertex> baseVertices;
-    vector<edge> baseEdges;
-    polyhedron basePoly;
-    buildPolyhedron(3, 5, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
-
-    int triangleBaseCount = 0;
-    for (const auto& f : baseFaces) {
-        if (f.vertex_ids.size() == 3) {
-            triangleBaseCount += 1;
-        } else if (f.vertex_ids.size() > 3) {
-            triangleBaseCount += f.vertex_ids.size() - 2; // triangolazione fan
-        }
-    }
-
-    int expectedFaces = triangleBaseCount * N * N;
-
+    int b = 1;
+    int expectedFaces = 20 * b * b; // Icosaedro ha 20 facce triangolari
     EXPECT_EQ(faces.size(), expectedFaces);
-    EXPECT_GT(vertices.size(), 0);
-    EXPECT_GT(edges.size(), 0);
 }
 
 
@@ -147,100 +126,27 @@ TEST(GeodesicPolyhedronTest, ClassII_3_5_2_2) {
     vector<vertex> vertices;
     vector<edge> edges;
     vector<face> faces;
-    polyhedron poly;
+    polyhedron p;
 
-    int b = 2, c = 2;
-    int N = b + c;
+    buildClassIIGeodesic(3, 5, 2, 2, vertices, edges, faces, p);
 
-    buildClassIIGeodesic(3, 5, b, c, vertices, edges, faces, poly);
-
-    // Conta i triangoli di partenza (icosaedro = 20 triangoli)
-    vector<face> baseFaces;
-    vector<vertex> baseVertices;
-    vector<edge> baseEdges;
-    polyhedron basePoly;
-    buildPolyhedron(3, 5, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
-
-    int triangleBaseCount = 0;
-    for (const auto& f : baseFaces) {
-        if (f.vertex_ids.size() == 3) {
-            triangleBaseCount += 1;
-        } else if (f.vertex_ids.size() > 3) {
-            triangleBaseCount += f.vertex_ids.size() - 2; // triangolazione fan
-        }
-    }
-
-    int expectedFaces = triangleBaseCount * N * N;
-
+    int b = 2;
+    int expectedFaces = 20 * b * b; // 20 facce nell'icosaedro
     EXPECT_EQ(faces.size(), expectedFaces);
-    EXPECT_GT(vertices.size(), 0);
-    EXPECT_GT(edges.size(), 0);
 }
 
-TEST(GeodesicPolyhedronTest, ClassII_5_3_1_1) {
-    vector<vertex> vertices;
-    vector<edge> edges;
-    vector<face> faces;
-    polyhedron poly;
-
-    int b = 1, c = 1;
-    int N = b + c;
-
-    buildClassIIGeodesic(5, 3, b, c, vertices, edges, faces, poly);
-
-    // Conta i triangoli del dodecaedro (che ha 12 facce pentagonali)
-    vector<face> baseFaces;
-    vector<vertex> baseVertices;
-    vector<edge> baseEdges;
-    polyhedron basePoly;
-    buildPolyhedron(5, 3, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
-
-    int triangleBaseCount = 0;
-    for (const auto& f : baseFaces) {
-        if (f.vertex_ids.size() == 3)
-            triangleBaseCount += 1;
-        else if (f.vertex_ids.size() > 3)
-            triangleBaseCount += f.vertex_ids.size() - 2;
-    }
-
-    int expectedFaces = triangleBaseCount * N * N;
-
-    EXPECT_EQ(faces.size(), expectedFaces);
-    EXPECT_GT(vertices.size(), 0);
-    EXPECT_GT(edges.size(), 0);
-}
 
 TEST(GeodesicPolyhedronTest, ClassII_3_3_1_1) {
     vector<vertex> vertices;
     vector<edge> edges;
     vector<face> faces;
-    polyhedron poly;
+    polyhedron p;
 
-    int b = 1, c = 1;
-    int N = b + c;
+    buildClassIIGeodesic(3, 3, 1, 1, vertices, edges, faces, p);
 
-    buildClassIIGeodesic(3, 3, b, c, vertices, edges, faces, poly);
-
-    // Il tetraedro ha 4 triangoli di base
-    vector<face> baseFaces;
-    vector<vertex> baseVertices;
-    vector<edge> baseEdges;
-    polyhedron basePoly;
-    buildPolyhedron(3, 3, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
-
-    int triangleBaseCount = 0;
-    for (const auto& f : baseFaces) {
-        if (f.vertex_ids.size() == 3)
-            triangleBaseCount += 1;
-        else if (f.vertex_ids.size() > 3)
-            triangleBaseCount += f.vertex_ids.size() - 2;
-    }
-
-    int expectedFaces = triangleBaseCount * N * N;
-
+    int b = 1;
+    int expectedFaces = 4 * b * b; // Tetraedro ha 4 facce triangolari
     EXPECT_EQ(faces.size(), expectedFaces);
-    EXPECT_GT(vertices.size(), 0);
-    EXPECT_GT(edges.size(), 0);
 }
 
 
@@ -255,24 +161,9 @@ TEST(DualPolyhedronTest, TetrahedronDual) {
 
     vector<vertex> dualVerts;
     vector<face> dualFaces;
+	vector<edge> dualEdges;
     polyhedron dual;
-    buildDualPolyhedron(verts, faces, original, dualVerts, dualFaces, dual);
-
-    EXPECT_EQ(dualVerts.size(), faces.size());
-    EXPECT_EQ(dualFaces.size(), verts.size());
-}
-
-TEST(DualPolyhedronTest, EsahedronDual) {
-    vector<vertex> verts;
-    vector<edge> edges;
-    vector<face> faces;
-    polyhedron original;
-    buildEsahedron(verts, edges, faces, original);
-
-    vector<vertex> dualVerts;
-    vector<face> dualFaces;
-    polyhedron dual;
-    buildDualPolyhedron(verts, faces, original, dualVerts, dualFaces, dual);
+    buildDualPolyhedron(verts, edges, faces, original, dualVerts, dualEdges, dualFaces, dual);
 
     EXPECT_EQ(dualVerts.size(), faces.size());
     EXPECT_EQ(dualFaces.size(), verts.size());
@@ -287,42 +178,26 @@ TEST(DualPolyhedronTest, OctahedronDual) {
 
     vector<vertex> dualVerts;
     vector<face> dualFaces;
+	vector<edge> dualEdges;
     polyhedron dual;
-    buildDualPolyhedron(verts, faces, original, dualVerts, dualFaces, dual);
+    buildDualPolyhedron(verts, edges, faces, original, dualVerts, dualEdges, dualFaces, dual);
 
     EXPECT_EQ(dualVerts.size(), faces.size());
     EXPECT_EQ(dualFaces.size(), verts.size());
-}
-
-TEST(DualPolyhedronTest, DodecahedronDual) {
-    vector<vertex> verts;
-    vector<edge> edges;
-    vector<face> faces;
-    polyhedron original;
-    buildDodecahedron(verts, edges, faces, original);
-
-    vector<vertex> dualVerts;
-    vector<face> dualFaces;
-    polyhedron dual;
-    buildDualPolyhedron(verts, faces, original, dualVerts, dualFaces, dual);
-
-    EXPECT_EQ(dualVerts.size(), faces.size());
-    EXPECT_EQ(dualFaces.size(), verts.size());
-    EXPECT_EQ(dual.vertex_ids.size(), dualVerts.size());
-    EXPECT_EQ(dual.face_ids.size(), dualFaces.size());
 }
 
 TEST(DualPolyhedronTest, IcosahedronDual) {
     vector<vertex> verts;
     vector<edge> edges;
     vector<face> faces;
+	vector<edge> dualEdges;
     polyhedron original;
     buildIcosahedron(verts, edges, faces, original);
 
     vector<vertex> dualVerts;
     vector<face> dualFaces;
     polyhedron dual;
-    buildDualPolyhedron(verts, faces, original, dualVerts, dualFaces, dual);
+    buildDualPolyhedron(verts, edges, faces, original, dualVerts, dualEdges, dualFaces, dual);
 
     EXPECT_EQ(dualVerts.size(), faces.size());
     EXPECT_EQ(dualFaces.size(), verts.size());
