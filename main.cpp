@@ -3,7 +3,7 @@
 #include <string>
 #include "Utils.hpp"
 #include "PolyhedronMesh.hpp"
-
+#include <set>
 int main() {
 	using namespace std;
 	using namespace PolyhedronMesh;
@@ -13,9 +13,9 @@ int main() {
     vector<face> faces;
     polyhedron poly;
 	
-	int p = 3, q = 5, b = 2, c = 0;
+	int p = 3, q = 3, b = 3, c = 0;
 	
-	buildPolyhedron(p, q, b, c, vertices, edges, faces, poly);
+	buildDualFromBaseThenGeodesic(p, q, b, c, vertices, edges, faces, poly);
 
     cout << "Geometria costruita: " << vertices.size() << " vertici, "
          << edges.size() << " spigoli, " << faces.size() << " facce\n";
@@ -30,17 +30,11 @@ int main() {
 	exportCell1Ds(edges, "Cell1Ds.txt");
 	exportCell2Ds(faces, "Cell2Ds.txt");
 	exportCell3Ds({poly}, "Cell3Ds.txt");
-	
-	vector<vertex> dualVertices;
-	vector<edge> dualEdges;
-    vector<face> dualFaces;
-    polyhedron dualPoly;
 
-    buildDualPolyhedron(vertices, edges, faces, poly, dualVertices, dualEdges, dualFaces, dualPoly);
-	cout << "Num Vertici duali: " << dualVertices.size() << std::endl;
-	cout << "Num Spigoli duali: " << dualEdges.size() << std::endl;
-	cout << "Num Facce duali:   " << dualFaces.size() << std::endl;
-	exportToParaview(dualVertices, dualEdges, "."); 
+	cout << "Num Vertici duali: " << vertices.size() << std::endl;
+	cout << "Num Spigoli duali: " << edges.size() << std::endl;
+	cout << "Num Facce duali:   " << faces.size() << std::endl;
+	exportToParaview(vertices, edges, "."); 
 
     cout << "Esportazione completata in: " << outputDirectory << endl;
 	return 0;

@@ -415,7 +415,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
     }
 
     const int N = b;
-    const double tolerance = 1e-3;
+    const double tolerance = 1e-2;
 
     for (const auto& f : triangleFaces) {
         vertex A = baseVertices[f.vertex_ids[0]];
@@ -737,7 +737,7 @@ void buildDualPolyhedron(
     dualEdges.clear();
     dualFaces.clear();
 
-    // 1. Ogni faccia originale diventa un vertice del duale (centroide)
+    // 1. Ogni faccia originale diventa un vertice del duale (centroide normalizzato)
     for (unsigned int i = 0; i < faces.size(); ++i) {
         const auto& f = faces[i];
         double cx = 0, cy = 0, cz = 0;
@@ -755,59 +755,67 @@ void buildDualPolyhedron(
         v.x = cx;
         v.y = cy;
         v.z = cz;
-        normalize(v);
+        normalize(v); // Proietta sulla sfera unitaria
         dualVertices.push_back(v);
     }
 
-    // 2. Costruzione facce duali: ogni vertice -> una faccia
-    for (unsigned int i = 0; i < vertices.size(); ++i) {
-        std::vector<int> adjacentFaces;
+	// 2. Ogni vertice originale diventa una faccia nel duale (facce attorno ad esso)
+	for (unsigned int i = 0; i < vertices.size(); ++i) {
+		std::vector<int> adjacentFaces;
 
-        // Trova tutte le facce che contengono il vertice i
-        for (unsigned int j = 0; j < faces.size(); ++j) {
-            const auto& f = faces[j];
-            if (std::find(f.vertex_ids.begin(), f.vertex_ids.end(), i) != f.vertex_ids.end()) {
-                adjacentFaces.push_back(j);
-            }
-        }
+		// Trova tutte le facce che contengono il vertice i
+		for (unsigned int j = 0; j < faces.size(); ++j) {
+			if (std::find(faces[j].vertex_ids.begin(), faces[j].vertex_ids.end(), i) != faces[j].vertex_ids.end()) {
+				adjacentFaces.push_back(j);
+			}
+		}
 
-        // Base ortonormale nel piano tangente al vertice
-        const auto& center = vertices[i];
-        Eigen::Vector3d vc(center.x, center.y, center.z);
-        vc.normalize();
+		if (adjacentFaces.empty()) continue;
 
-        Eigen::Vector3d ref1;
-        if (std::abs(vc.x()) < 1e-6 && std::abs(vc.y()) < 1e-6)
-            ref1 = Eigen::Vector3d(0, 1, 0);
-        else
-            ref1 = Eigen::Vector3d(-vc.y(), vc.x(), 0).normalized();
+		std::vector<int> orderedFaces;
+		std::set<int> visited;
+		visited.insert(adjacentFaces[0]);
+		orderedFaces.push_back(adjacentFaces[0]);
 
-        Eigen::Vector3d ref2 = vc.cross(ref1);
+		while (true) {
+			bool found = false;
+			int lastFaceId = orderedFaces.back();
+			const face& lastFace = faces[lastFaceId];
 
-        // Ordina le facce attorno al vertice i
-        std::vector<std::pair<double, int>> ordered;
-        for (int fid : adjacentFaces) {
-            const auto& fc = dualVertices[fid];
-            Eigen::Vector3d fvec(fc.x, fc.y, fc.z);
-            Eigen::Vector3d dir = (fvec - vc).normalized();
+			for (int fid : adjacentFaces) {
+				if (visited.count(fid)) continue;
+				const face& f = faces[fid];
 
-            double x = dir.dot(ref1);
-            double y = dir.dot(ref2);
-            double angle = std::atan2(y, x);
-            ordered.emplace_back(angle, fid);
-        }
+				// controlla se f condivide un lato e il vertice i con lastFace
+				int common = 0;
+				for (int v1 : f.vertex_ids) {
+					for (int v2 : lastFace.vertex_ids) {
+						if (v1 == v2) ++common;
+					}
+				}
+				if (common >= 2) { // condividono un lato
+					orderedFaces.push_back(fid);
+					visited.insert(fid);
+					found = true;
+					break;
+				}
+			}
 
-        std::sort(ordered.begin(), ordered.end());
+			if (!found) break; // ciclo chiuso o spezzato
+		}
 
-        // Costruisci la faccia duale
-        face df;
-        df.id = i;
-        for (const auto& [angle, fid] : ordered)
-            df.vertex_ids.push_back(fid);
+		// Se il ciclo è incompleto, completa con quelle rimanenti (poco elegante ma robusto)
+		for (int fid : adjacentFaces)
+			if (!visited.count(fid)) orderedFaces.push_back(fid);
 
-        // Gli edge_ids saranno costruiti dopo
-        dualFaces.push_back(df);
-    }
+		face df;
+		df.id = i;
+		for (int fid : orderedFaces) {
+			df.vertex_ids.push_back(fid);
+		}
+		dualFaces.push_back(df);
+	}
+
 
     // 3. Costruzione esplicita degli spigoli nel duale
     std::map<std::pair<int, int>, int> edgeMap;
@@ -818,7 +826,6 @@ void buildDualPolyhedron(
             int a = f.vertex_ids[i];
             int b = f.vertex_ids[(i + 1) % n];
             auto key = std::minmax(a, b);
-
             if (!edgeMap.count(key)) {
                 int eid = static_cast<int>(dualEdges.size());
                 edgeMap[key] = eid;
@@ -841,13 +848,10 @@ void buildDualPolyhedron(
     for (const auto& f : dualFaces)
         dualPoly.face_ids.push_back(f.id);
 
-    dualPoly.num_vertices = dualVertices.size();
-    dualPoly.num_edges = dualEdges.size();
-    dualPoly.num_faces = dualFaces.size();
+    dualPoly.num_vertices = static_cast<int>(dualVertices.size());
+    dualPoly.num_edges = static_cast<int>(dualEdges.size());
+    dualPoly.num_faces = static_cast<int>(dualFaces.size());
 }
-
-
-
 
 void exportCell0Ds (const vector<vertex>& vertices, const string& filename) { // O(n)
 	ofstream file(filename);
@@ -981,6 +985,49 @@ void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges,
 	string edgeFile = outputDirectory + "/edges.inp";
 	exporter.ExportSegments(edgeFile, points, segments, pointProps, edgeProps, edgeMaterials);
 }
+
+void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& finalVertices, vector<edge>& finalEdges, vector<face>& finalFaces, polyhedron& finalPoly) {
+	if (p == 3 && q == 3 && b == 0 && c == 0) {
+        buildPolyhedron(p, q, b, c, finalVertices, finalEdges, finalFaces, finalPoly);
+        return;
+    }
+    // Step 1: costruisci il solido platonico di base (b = c = 0)
+    vector<vertex> baseVertices;
+    vector<edge> baseEdges;
+    vector<face> baseFaces;
+    polyhedron basePoly;
+    buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
+
+    // Step 2: calcola il duale del solido di base
+    vector<vertex> dualVertices;
+    vector<edge> dualEdges;
+    vector<face> dualFaces;
+    polyhedron dualPoly;
+    buildDualPolyhedron(baseVertices, baseEdges, baseFaces, basePoly,
+                        dualVertices, dualEdges, dualFaces, dualPoly);
+
+    // Step 3: se b e c permettono la geodesica, calcolala sul duale
+    bool classI = (b == 0 && c > 0) || (b > 0 && c == 0);
+    bool classII = (b == c && b > 0);
+
+    if (classI) {
+        buildClassIGeodesic(3, q, b + c, finalVertices, finalEdges, finalFaces, finalPoly);
+    } else if (classII) {
+        buildClassIIGeodesic(3, q, b, c, finalVertices, finalEdges, finalFaces, finalPoly);
+    } else if (b == 0 && c == 0) {
+        finalVertices = dualVertices;
+        finalEdges = dualEdges;
+        finalFaces = dualFaces;
+        finalPoly = dualPoly;
+    } else {
+        cerr << "Parametri (b=" << b << ", c=" << c << ") non validi per una geodesica.\n";
+        finalVertices = dualVertices;
+        finalEdges = dualEdges;
+        finalFaces = dualFaces;
+        finalPoly = dualPoly;
+    }
+}
+
 
 /*void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<face>& dualFaces, vector<edge>& dualEdges, polyhedron& dualPoly) {
     dualVertices = calculateCentroids(vertices, faces);

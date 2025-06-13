@@ -51,3 +51,5 @@ std::vector<PolyhedronMesh::vertex> calculateCentroids(const std::vector<Polyhed
 void buildDualPolyhedron(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::edge>& edges, const std::vector<PolyhedronMesh::face>& faces, const PolyhedronMesh::polyhedron& original, std::vector<PolyhedronMesh::vertex>& dualVertices, std::vector<PolyhedronMesh::edge>& dualEdges, std::vector<PolyhedronMesh::face>& dualFaces, PolyhedronMesh::polyhedron& dualPoly);
 
 void exportToParaview(const std::vector<PolyhedronMesh::vertex>& vertices, const std::vector<PolyhedronMesh::edge>& edges, const std::string& outputDirectory);
+
+void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, std::vector<PolyhedronMesh::vertex>& finalVertices, std::vector<PolyhedronMesh::edge>& finalEdges, std::vector<PolyhedronMesh::face>& finalFaces, PolyhedronMesh::polyhedron& finalPoly);
