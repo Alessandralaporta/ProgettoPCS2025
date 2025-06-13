@@ -161,80 +161,76 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
 }
 
 void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
-    vertices.clear(); edges.clear(); faces.clear();
+    vertices.clear();
+    edges.clear();
+    faces.clear();
 
-    const double phi = (1.0 + sqrt(5.0)) / 2.0;
+    const double phi = (1.0 + std::sqrt(5.0)) / 2.0;
+    const double a = 1.0;
+    const double b = 1.0 / phi;
+    const double c = phi;
 
     vector<Eigen::Vector3d> raw = {
-        {-1, -1, -1}, {-1, -1,  1}, {-1,  1, -1}, {-1,  1,  1},
-        { 1, -1, -1}, { 1, -1,  1}, { 1,  1, -1}, { 1,  1,  1},
-        { 0, -1/phi, -phi}, { 0, -1/phi, phi}, { 0, 1/phi, -phi}, { 0, 1/phi, phi},
-        {-1/phi, -phi, 0}, { 1/phi, -phi, 0}, {-1/phi, phi, 0}, { 1/phi, phi, 0},
-        {-phi, 0, -1/phi}, { phi, 0, -1/phi}, {-phi, 0, 1/phi}, { phi, 0, 1/phi}
+        { a,  a,  a}, { a,  a, -a}, { a, -a,  a}, { a, -a, -a},
+        {-a,  a,  a}, {-a,  a, -a}, {-a, -a,  a}, {-a, -a, -a},
+        { 0,  b,  c}, { 0,  b, -c}, { 0, -b,  c}, { 0, -b, -c},
+        { b,  c, 0}, {-b,  c,  0}, { b, -c,  0}, {-b, -c, 0},
+        { c,  0,  b}, {-c,  0,  b}, { c,  0, -b}, {-c,  0, -b}
     };
 
     for (size_t i = 0; i < raw.size(); ++i) {
-        raw[i].normalize();
-        vertices.push_back({static_cast<int>(i), raw[i][0], raw[i][1], raw[i][2]});
+        raw[i].normalize();  // Proiezione sulla sfera unitaria
+        vertices.push_back({(int)i, raw[i][0], raw[i][1], raw[i][2]});
     }
 
     vector<vector<int>> faceVertices = {
-        {0, 8, 4, 14, 16},
-        {0, 16, 2, 10, 12},
-        {0, 12, 1, 9, 8},
-        {1, 17, 3, 10, 12},
-        {1, 9, 5, 19, 17},
-        {3, 17, 19, 7, 15},
-        {3, 15, 2, 16, 10},
-        {2, 15, 6, 18, 14},
-        {4, 8, 9, 5, 13},
-        {4, 13, 6, 15, 14},
-        {5, 13, 6, 18, 19},
-        {7, 19, 18, 6, 15}
+        {0, 8, 4, 13, 12},
+        {0, 12, 1, 18, 16},
+        {0, 16, 2, 10, 8},
+        {8, 10, 6, 17, 4},
+        {12, 13, 5, 9, 1},
+        {16, 18, 3, 14, 2},
+        {4, 17, 19, 5, 13},
+        {1, 9, 11, 3, 18},
+        {2, 14, 15, 6, 10},
+        {3, 11, 7, 15, 14},
+        {5, 19, 7, 11, 9},
+        {6, 15, 7, 19, 17}
     };
+
+    // Mappa per garantire spigoli unici
+    map<pair<int, int>, int> edgeMap;
 
     for (size_t i = 0; i < faceVertices.size(); ++i) {
         face f;
         f.id = static_cast<int>(i);
         f.vertex_ids = faceVertices[i];
+        int n = f.vertex_ids.size();
+        for (int j = 0; j < n; ++j) {
+            int a = f.vertex_ids[j];
+            int b = f.vertex_ids[(j + 1) % n];
+            auto key = std::minmax(a, b);
+            if (!edgeMap.count(key)) {
+                int eid = static_cast<int>(edges.size());
+                edgeMap[key] = eid;
+                edges.push_back({eid, key.first, key.second});
+            }
+            f.edge_ids.push_back(edgeMap[key]);
+        }
         faces.push_back(f);
     }
 
-    // CORRETTA costruzione spigoli unici
-    map<pair<int, int>, int> edgeMap;
-	for (auto& f : faces) {
-		f.edge_ids.clear();
-		int n = f.vertex_ids.size();
-		for (int i = 0; i < n; ++i) {
-			int a = f.vertex_ids[i];
-			int b = f.vertex_ids[(i + 1) % n];
-			auto key = std::minmax(a, b); // importante usare ordinati
-
-			int eid;
-			if (edgeMap.count(key)) {
-				eid = edgeMap[key];
-			} else {
-				eid = static_cast<int>(edges.size());
-				edges.push_back({eid, key.first, key.second});
-				edgeMap[key] = eid;
-			}
-
-			f.edge_ids.push_back(eid);
-		}
-	}
-
-
-    // Riempie polyhedron
+    // Assegnazione al polyhedron
     polyhedron.id = 3;
     polyhedron.vertex_ids.clear();
-    for (const auto& v : vertices)
-        polyhedron.vertex_ids.push_back(v.id);
+    for (size_t i = 0; i < vertices.size(); ++i)
+        polyhedron.vertex_ids.push_back(i);
     polyhedron.edge_ids.clear();
-    for (const auto& e : edges)
-        polyhedron.edge_ids.push_back(e.id);
+    for (size_t i = 0; i < edges.size(); ++i)
+        polyhedron.edge_ids.push_back(i);
     polyhedron.face_ids.clear();
-    for (const auto& f : faces)
-        polyhedron.face_ids.push_back(f.id);
+    for (size_t i = 0; i < faces.size(); ++i)
+        polyhedron.face_ids.push_back(i);
 }
 
 
@@ -917,5 +913,3 @@ void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges,
 	string edgeFile = outputDirectory + "/edges.inp";
 	exporter.ExportSegments(edgeFile, points, segments, pointProps, edgeProps, edgeMaterials);
 }
-
-//length

@@ -13,7 +13,7 @@ int main() {
     vector<face> faces;
     polyhedron poly;
 	
-	int p = 5, q = 3, b = 0, c = 0;
+	int p = 5, q = 3, b = 2, c = 0;
 	
     bool classI = (b > 0 && c == 0) || (b == 0 && c > 0);
     bool classII = (b > 0 && b == c);
