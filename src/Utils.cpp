@@ -25,8 +25,9 @@ void normalize(vertex& v) { //O(1)
 }
 
 void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(v+e+f), O(1) con dati piccoli
-	
-	vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear();
+	edges.clear();
+	faces.clear();
 	
 	vertices = {
 		{0, 1, 1, 1},
@@ -65,8 +66,9 @@ void buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
 }
 
 void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(v+e+f), O(1) con dati piccoli
-	
-	vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear();
+	edges.clear();
+	faces.clear();
 	
 	vertices = {
 		{0, -1, -1, -1},
@@ -112,9 +114,11 @@ void buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> 
 	}
 }
 
-void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) { // O(v+e+f), O(1) con dati piccoli
+void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
 	
-	vertices.clear(); edges.clear(); faces.clear();
+	vertices.clear();
+	edges.clear();
+	faces.clear();
 	
 	vertices = {
         {0,  1,  0,  0},
@@ -132,14 +136,14 @@ void buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face>
     };
 	
 	faces = {
-		{0, {0, 2, 4}, {0, 5, 4}},     // 0→2, 2→4, 4→0
-		{1, {2, 1, 4}, {1, 6, 5}},     // 2→1, 1→4, 4→2
-		{2, {1, 3, 4}, {2, 7, 6}},     // 1→3, 3→4, 4→1
-		{3, {3, 0, 4}, {3, 4, 7}},     // 3→0, 0→4, 4→3
-		{4, {0, 5, 2}, {8, 9, 0}},     // 0→5, 5→2, 2→0
-		{5, {2, 5, 1}, {9,10, 1}},     // 2→5, 5→1, 1→2
-		{6, {1, 5, 3}, {10,11, 2}},    // 1→5, 5→3, 3→1
-		{7, {3, 5, 0}, {11, 8, 3}}     // 3→5, 5→0, 0→3
+		{0, {0, 2, 4}, {0, 5, 4}},     
+		{1, {2, 1, 4}, {1, 6, 5}},     
+		{2, {1, 3, 4}, {2, 7, 6}},     
+		{3, {3, 0, 4}, {3, 4, 7}},     
+		{4, {0, 5, 2}, {8, 9, 0}},     
+		{5, {2, 5, 1}, {9,10, 1}},     
+		{6, {1, 5, 3}, {10,11, 2}},    
+		{7, {3, 5, 0}, {11, 8, 3}}     
 	};
 
 	polyhedron.id = 2;
@@ -198,7 +202,7 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
         {6, 15, 7, 19, 17}
     };
 
-    // Mappa per garantire spigoli unici
+    // mappa per garantire spigoli unici
     map<pair<int, int>, int> edgeMap;
 
     for (size_t i = 0; i < faceVertices.size(); ++i) {
@@ -220,7 +224,6 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
         faces.push_back(f);
     }
 
-    // Assegnazione al polyhedron
     polyhedron.id = 3;
     polyhedron.vertex_ids.clear();
     for (size_t i = 0; i < vertices.size(); ++i)
@@ -235,7 +238,9 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
 
 
 void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) {
-    vertices.clear(); edges.clear(); faces.clear();
+    vertices.clear();
+	edges.clear();
+	faces.clear();
 
     const double phi = (1.0 + sqrt(5.0)) / 2.0;
 
@@ -300,10 +305,10 @@ void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vecto
         cout << "Valori non validi" << endl;
         return;
     }
-
-    bool ClassI = (b == 0 && c > 0) || (b > 0 && c == 0);
+	
+	bool ClassI = (b == 0 && c > 0) || (b > 0 && c == 0);
     bool ClassII = (b == c && b > 0);
-
+	
     if (!ClassI && !ClassII && (b != 0 || c != 0)) {
         cout << "Tipo di classe non supportato" << endl;
         return;
@@ -347,15 +352,15 @@ void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vecto
 }
 
 
-double distance(const vertex& a, const vertex& b) { // O(1)
+double distance(const vertex& a, const vertex& b) { 
 	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
 }
 
-bool sameVertex(const vertex& a, const vertex& b, double tolerance) { // O(1)
+bool sameVertex(const vertex& a, const vertex& b, double tolerance) { 
     return distance(a, b) <= tolerance;
 }
 
-int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices, double tolerance) { // O(n)
+int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices, double tolerance) { 
     tolerance = 1e-3;
 	for (const auto& existing : vertices) {
         if (sameVertex(existing, vertex{-1, x, y, z}, tolerance)) {
@@ -379,17 +384,7 @@ void projectVerticesOnUnitSphere(vector<vertex>&vertices) { // O(1)
     }
 }
 
-void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) { // O(n^4)
-    /*if (p != 3) {
-        cerr << "Geodesiche di classe I supportate solo per p = 3.\n";
-        return;
-    }
-	
-	if ((p < 3 || p > 5) || (q != 3 && q != 4 && q != 5)) {
-        cerr << "Tipo non supportato: p = " << p << ", q = " << q << endl;
-        return;
-    }*/
-
+void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) { 
     vertices.clear();
     edges.clear();
     faces.clear();
@@ -424,7 +419,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         Eigen::MatrixXi grid(N + 1, N + 1);
         grid.setConstant(-1);
 
-        // Crea vertici baricentrici
+        // crea vertici baricentrici
         for (int i = 0; i <= N; ++i) {
             for (int j = 0; j <= N - i; ++j) {
                 int k = N - i - j;
@@ -443,7 +438,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
             }
         }
 
-        // Triangola la griglia baricentrica
+        // triangola la griglia baricentrica
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N - i; ++j) {
                 int v0 = grid(i,j);
@@ -461,7 +456,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         }
     }
 
-    // Crea spigoli unici e associa agli ID facce
+    // crea spigoli unici e associa agli ID facce
     map<pair<int, int>, int> edgeMap;
     for (auto& f : faces) {
         for (int i = 0; i < 3; ++i) {
@@ -477,7 +472,6 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         }
     }
 
-    // Assemble il poly finale
     poly = basePoly;
     poly.vertex_ids.clear();
     for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
@@ -489,12 +483,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
 }
 
 void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
-    /*if (p != 3 || b <= 0 || b != c) {
-        cerr << "Classe II supporta solo triangoli regolari con b = c > 0\n";
-        return;
-    }*/
-
-    int N = b;
+    int N = b + c;
     const double tol = 1e-4;
 
     vector<vertex> baseVertices;
@@ -514,9 +503,43 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
     for (const auto& f : baseFaces) {
         if (f.vertex_ids.size() != 3) continue;
 
-        int a = f.vertex_ids[0];
-        int b = f.vertex_ids[1];
-        int c = f.vertex_ids[2];
+        vector<int> ids = f.vertex_ids;
+		
+		Eigen::Vector3d center(0, 0, 0);
+		for (int vid : ids) {
+			center += Eigen::Vector3d(baseVertices[vid].x, baseVertices[vid].y, baseVertices[vid].z);
+		}
+		center.normalize();
+
+		Eigen::Vector3d vecs[3];
+		for (int i = 0; i < 3; ++i) {
+			vecs[i] = Eigen::Vector3d(baseVertices[ids[i]].x, baseVertices[ids[i]].y, baseVertices[ids[i]].z) - center;
+		}
+
+		// calcola angoli rispetto al primo vettore (reference)
+		double angles[3];
+		for (int i = 0; i < 3; ++i) {
+			Eigen::Vector3d ref = vecs[0];
+			Eigen::Vector3d curr = vecs[i];
+			Eigen::Vector3d cross = ref.cross(curr);
+			double dot = ref.dot(curr);
+			double sign = (cross.dot(center) > 0) ? 1.0 : -1.0;
+			angles[i] = sign * acos(min(1.0, max(-1.0, dot / (ref.norm() * curr.norm()))));
+		}
+
+		// ordina ids secondo gli angoli
+		for (int i = 0; i < 2; ++i) {
+			for (int j = i + 1; j < 3; ++j) {
+				if (angles[i] > angles[j]) {
+					swap(angles[i], angles[j]);
+					swap(ids[i], ids[j]);
+				}
+			}
+		}
+		
+		int a = ids[0];
+		int b = ids[1];
+		int c = ids[2];
 
         const vertex& A = baseVertices[a];
         const vertex& B = baseVertices[b];
@@ -532,7 +555,8 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
             for (int j = 0; j <= N - i; ++j) {
                 int k = N - i - j;
 
-                Eigen::Vector3d P = (va * i + vb * j + vc * k) / N;
+                // Classe II usa rotazione della base baricentrica
+				Eigen::Vector3d P = ((double)k / N) * va + ((double)i / N) * vb + ((double)j / N) * vc;
                 P.normalize();
 
                 vector<pair<int, int>> parts = {
@@ -553,7 +577,7 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
             }
         }
 
-        // Crea triangoli
+        // crea triangoli
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N - i; ++j) {
                 int v0 = grid(i,j);
@@ -569,7 +593,7 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
         }
     }
 
-    // Costruzione spigoli unici
+    // costruzione spigoli unici
     map<pair<int, int>, int> edgeMap; //associa a una coppia ordinata di vertici(lo spigolo) una coppia ordinata di vertici
     for (auto& f : faces) {
         f.edge_ids.clear();
@@ -586,7 +610,6 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
         }
     }
 
-    // Assegnazione al polyhedron finale
     poly.id = 1000 + N;
     poly.vertex_ids.clear();
     for (auto& v : vertices) poly.vertex_ids.push_back(v.id);
@@ -664,21 +687,21 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
         return;
     }
 
-    // Ricostruzione cammino
+    // ricostruzione cammino
     vector<int> path;
     for (int at = endId; at != -1; at = prev[at])
         path.push_back(at);
     reverse(path.begin(), path.end());
 
-    // Resetta ShortPath
+    // resetta ShortPath
     for (auto& v : vertices) v.ShortPath = 0;
     for (auto& e : edges) e.ShortPath = 0;
 
-    // Marca i vertici
+    // marca i vertici
     for (int v : path)
         vertices[v].ShortPath = 1;
 
-    // Marca i lati e somma lunghezza
+    // marca i lati e somma lunghezza
     int edgeCount = 0;
     double totalLength = 0.0;
     for (size_t i = 0; i < path.size() - 1; ++i) {
@@ -727,33 +750,16 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
     dualEdges.clear();
     dualFaces.clear();
 
-    // 1. Ogni faccia originale diventa un vertice del duale (centroide normalizzato)
-    for (unsigned int i = 0; i < faces.size(); ++i) {
-        const auto& f = faces[i];
-        double cx = 0, cy = 0, cz = 0;
-        for (int vid : f.vertex_ids) {
-            cx += vertices[vid].x;
-            cy += vertices[vid].y;
-            cz += vertices[vid].z;
-        }
-        cx /= f.vertex_ids.size();
-        cy /= f.vertex_ids.size();
-        cz /= f.vertex_ids.size();
-
-        vertex v;
-        v.id = i;
-        v.x = cx;
-        v.y = cy;
-        v.z = cz;
+    dualVertices = calculateCentroids(vertices, faces);
+	for (auto& v : dualVertices) {
         normalize(v); // Proietta sulla sfera unitaria
-        dualVertices.push_back(v);
     }
 
-	// 2. Ogni vertice originale diventa una faccia nel duale (facce attorno ad esso)
+	//ogni vertice originale diventa una faccia nel duale (facce attorno ad esso)
 	for (unsigned int i = 0; i < vertices.size(); ++i) {
 		vector<int> adjacentFaces;
 
-		// Trova tutte le facce che contengono il vertice i
+		// trovo tutte le facce che contengono il vertice i
 		for (unsigned int j = 0; j < faces.size(); ++j) {
 			if (find(faces[j].vertex_ids.begin(), faces[j].vertex_ids.end(), i) != faces[j].vertex_ids.end()) {
 				adjacentFaces.push_back(j);
@@ -776,7 +782,7 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
 				if (visited.count(fid)) continue;
 				const face& f = faces[fid];
 
-				// controlla se f condivide un lato e il vertice i con lastFace
+				// controllo se f condivide un lato e il vertice i con lastFace
 				int common = 0;
 				for (int v1 : f.vertex_ids) {
 					for (int v2 : lastFace.vertex_ids) {
@@ -794,7 +800,7 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
 			if (!found) break; // ciclo chiuso o spezzato
 		}
 
-		// Se il ciclo è incompleto, completa con quelle rimanenti (poco elegante ma robusto)
+		// se il ciclo è incompleto, completo con quelle rimanenti
 		for (int fid : adjacentFaces)
 			if (!visited.count(fid)) orderedFaces.push_back(fid);
 
@@ -807,7 +813,7 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
 	}
 
 
-    // 3. Costruzione esplicita degli spigoli nel duale
+    // costruzione esplicita degli spigoli nel duale
     map<pair<int, int>, int> edgeMap;
     for (auto& f : dualFaces) {
         int n = f.vertex_ids.size();
@@ -825,7 +831,6 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
         }
     }
 
-    // 4. Costruisci il polyhedron duale
     dualPoly.id = original.id + 1000;
     dualPoly.vertex_ids.clear();
     dualPoly.edge_ids.clear();
@@ -981,35 +986,29 @@ void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& f
         buildPolyhedron(p, q, b, c, finalVertices, finalEdges, finalFaces, finalPoly);
         return;
     }
-    // Step 1: costruisci il solido platonico di base (b = c = 0)
     vector<vertex> baseVertices;
     vector<edge> baseEdges;
     vector<face> baseFaces;
     polyhedron basePoly;
     buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
 
-    // Step 2: calcola il duale del solido di base
     vector<vertex> dualVertices;
     vector<edge> dualEdges;
     vector<face> dualFaces;
     polyhedron dualPoly;
-    buildDualPolyhedron(baseVertices, baseEdges, baseFaces, basePoly,
-                        dualVertices, dualEdges, dualFaces, dualPoly);
+    buildDualPolyhedron(baseVertices, baseEdges, baseFaces, basePoly, dualVertices, dualEdges, dualFaces, dualPoly);
 
-    // Step 3: se b e c permettono la geodesica, calcolala sul duale
 	bool classII = (b == c && b > 0);
 	bool classI  = !classII && ((b == 0 && c > 0) || (b > 0 && c == 0));
 
 
 	if (classII) {
-		cout << ">> Classe II su duale...\n";
 		buildClassIIGeodesic(3, q, b, c, dualVertices, dualEdges, dualFaces, dualPoly);
 		finalVertices = dualVertices;
 		finalEdges    = dualEdges;
 		finalFaces    = dualFaces;
 		finalPoly     = dualPoly;
 	} else if (classI) {
-		cout << ">> Classe I su duale...\n";
 		buildClassIGeodesic(3, q, b + c, dualVertices, dualEdges, dualFaces, dualPoly);
 		finalVertices = dualVertices;
 		finalEdges    = dualEdges;

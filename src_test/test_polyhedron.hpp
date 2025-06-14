@@ -116,8 +116,8 @@ TEST(GeodesicPolyhedronTest, ClassII_3_5_1_1) {
     
     buildClassIIGeodesic(3, 5, 1, 1, vertices, edges, faces, p);
 
-    int b = 1;
-    int expectedFaces = 20 * b * b; // Icosaedro ha 20 facce triangolari
+    int N = 1 + 1;
+    int expectedFaces = 20 * N * N; 
     EXPECT_EQ(faces.size(), expectedFaces);
 }
 
@@ -130,8 +130,8 @@ TEST(GeodesicPolyhedronTest, ClassII_3_5_2_2) {
 
     buildClassIIGeodesic(3, 5, 2, 2, vertices, edges, faces, p);
 
-    int b = 2;
-    int expectedFaces = 20 * b * b; // 20 facce nell'icosaedro
+    int N = 2 + 2;
+    int expectedFaces = 20 * N * N; 
     EXPECT_EQ(faces.size(), expectedFaces);
 }
 
@@ -144,8 +144,8 @@ TEST(GeodesicPolyhedronTest, ClassII_3_3_1_1) {
 
     buildClassIIGeodesic(3, 3, 1, 1, vertices, edges, faces, p);
 
-    int b = 1;
-    int expectedFaces = 4 * b * b; // Tetraedro ha 4 facce triangolari
+    int N = 1 + 1;
+    int expectedFaces = 4 * N * N; // Tetraedro ha 4 facce triangolari
     EXPECT_EQ(faces.size(), expectedFaces);
 }
 
