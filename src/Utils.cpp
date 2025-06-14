@@ -378,7 +378,7 @@ int getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) {
     return getOrAddVertex(x, y, z, vertices, 1e-4);
 }
 
-void projectVerticesOnUnitSphere(vector<vertex>&vertices) { // O(1)
+void projectVerticesOnUnitSphere(vector<vertex>&vertices) {
     for(auto& v : vertices){
         normalize(v);
     }
@@ -402,7 +402,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         if (f.vertex_ids.size() == 3) {
             triangleFaces.push_back({faceId++, f.vertex_ids, {}});
         } else {
-            for (size_t i = 1; i < f.vertex_ids.size() - 1; ++i) { // prende il primo vertice fisso e crea triangoli con le coppie successive di vertici, Alla fine ottieni solo facce triangolari, tutte pronte per la suddivisione.
+            for (size_t i = 1; i < f.vertex_ids.size() - 1; ++i) { // prende il primo vertice fisso e crea triangoli con le coppie successive di vertici, alla fine ottieni solo facce triangolari, tutte pronte per la suddivisione.
                 triangleFaces.push_back({faceId++, {f.vertex_ids[0], f.vertex_ids[i], f.vertex_ids[i + 1]}, {}});
             }
         }
@@ -555,7 +555,7 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
             for (int j = 0; j <= N - i; ++j) {
                 int k = N - i - j;
 
-                // Classe II usa rotazione della base baricentrica
+                //rotazione della base baricentrica
 				Eigen::Vector3d P = ((double)k / N) * va + ((double)i / N) * vb + ((double)j / N) * vc;
                 P.normalize();
 
@@ -659,7 +659,7 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
     priority_queue<P, vector<P>, greater<P>> pq;
     pq.push({0.0, startId});
 
-    // Costruzione grafo come lista adiacenza
+    //costruzione grafo come lista adiacenza
     vector<vector<pair<int, double>>> adj(N);
     for (const auto& e : edges) {
         double len = e.length > 0 ? e.length : distance(vertices[e.origin], vertices[e.end]);
@@ -667,7 +667,7 @@ void findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId
         adj[e.end].emplace_back(e.origin, len); // non orientato
     }
 
-    // Algoritmo di Dijkstra
+    //algoritmo di Dijkstra
     while (!pq.empty()) {
         auto [d, u] = pq.top(); pq.pop();
         if (visited[u]) continue;
@@ -752,10 +752,10 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
 
     dualVertices = calculateCentroids(vertices, faces);
 	for (auto& v : dualVertices) {
-        normalize(v); // Proietta sulla sfera unitaria
+        normalize(v);
     }
 
-	//ogni vertice originale diventa una faccia nel duale (facce attorno ad esso)
+	//ogni vertice originale diventa una faccia nel duale
 	for (unsigned int i = 0; i < vertices.size(); ++i) {
 		vector<int> adjacentFaces;
 

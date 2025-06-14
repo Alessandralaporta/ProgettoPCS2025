@@ -11,11 +11,9 @@ struct vertex {
     int id;
     double x, y, z;
 	int ShortPath = 0;
-    //lunghezza del vettore
     double length() const {
         return sqrt(x*x + y*y + z*z);
     }
-    // normalizza il vettore e lo trasforma in un versore
     vertex normalized() const {
         double len = length();
         if (len > 1e-12) {
