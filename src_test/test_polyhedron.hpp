@@ -86,7 +86,6 @@ TEST(GeodesicPolyhedronTest, ClassI_3_4_1_0) {
 
     buildClassIGeodesic(3, 4, 1, vertices, edges, faces, poly);
 
-    // Per b = 1, otteniamo direttamente l'ottaedro base
     EXPECT_EQ(vertices.size(), 6);
     EXPECT_EQ(edges.size(), 12);
     EXPECT_EQ(faces.size(), 8);
@@ -105,8 +104,6 @@ TEST(GeodesicPolyhedronTest, ClassI_3_4_2_0) {
     EXPECT_EQ(edges.size(), 12 * T);
     EXPECT_EQ(faces.size(), 8 * T);
 }
-
-
 
 TEST(GeodesicPolyhedronTest, ClassII_3_5_1_1) {
     vector<vertex> vertices;

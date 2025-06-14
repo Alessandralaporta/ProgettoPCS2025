@@ -13,9 +13,14 @@ int main() {
     vector<face> faces;
     polyhedron poly;
 
-    int p = 3, q = 4, b = 2, c = 2;
-	//buildClassIIGeodesic(p,q,b,c,vertices,edges,faces,poly);
-    buildDualFromBaseThenGeodesic(p, q, b, c, vertices, edges, faces, poly);
+    int p = 3, q = 5, b = 2, c = 2;
+	//buildPolyhedron(p,q,b,c,vertices,edges,faces,poly);
+	buildDualFromBaseThenGeodesic(p,q,b,c,vertices,edges,faces,poly);
+
+
+	cout << "Numero di vertici: " << vertices.size() << endl;
+    cout << "Numero di spigoli: " << edges.size() << endl;
+    cout << "Numero di facce: " << faces.size() << endl;
 
     int startId = 0;
     int endId = vertices.size() / 2;  // metà arbitraria

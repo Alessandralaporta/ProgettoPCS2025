@@ -409,7 +409,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
     }
 
     const int N = b;
-    const double tolerance = 1e-2;
+    const double tolerance = 1e-6;
 
     for (const auto& f : triangleFaces) {
         vertex A = baseVertices[f.vertex_ids[0]];
@@ -472,14 +472,18 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         }
     }
 
-    poly = basePoly;
-    poly.vertex_ids.clear();
-    for (const auto& v : vertices) poly.vertex_ids.push_back(v.id);
-    poly.edge_ids.clear();
-    for (const auto& e : edges) poly.edge_ids.push_back(e.id);
-    poly.face_ids.clear();
-    for (const auto& f : faces) poly.face_ids.push_back(f.id);
-    poly.id = basePoly.id;
+	polyhedron newPoly;
+	newPoly.id = basePoly.id + 1000;
+
+	for (int i = 0; i < (int)vertices.size(); ++i)
+		newPoly.vertex_ids.push_back(i);
+	for (int i = 0; i < (int)edges.size(); ++i)
+		newPoly.edge_ids.push_back(i);
+	for (int i = 0; i < (int)faces.size(); ++i)
+		newPoly.face_ids.push_back(i);
+
+	poly = newPoly;
+
 }
 
 void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
