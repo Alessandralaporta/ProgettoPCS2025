@@ -318,7 +318,6 @@ void buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vecto
         return;
     }
 
-    // ALTRIMENTI: costruisci solido platonico
     if (p == 3 && q == 3 && b == 0 && c == 0) {
         buildTetrahedron(vertices, edges, faces, polyhedron);
         return;
@@ -381,7 +380,7 @@ void projectVerticesOnUnitSphere(vector<vertex>&vertices) { // O(1)
 }
 
 void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) { // O(n^4)
-    if (p != 3) {
+    /*if (p != 3) {
         cerr << "Geodesiche di classe I supportate solo per p = 3.\n";
         return;
     }
@@ -389,7 +388,7 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
 	if ((p < 3 || p > 5) || (q != 3 && q != 4 && q != 5)) {
         cerr << "Tipo non supportato: p = " << p << ", q = " << q << endl;
         return;
-    }
+    }*/
 
     vertices.clear();
     edges.clear();
@@ -422,7 +421,8 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
         vertex B = baseVertices[f.vertex_ids[1]];
         vertex C = baseVertices[f.vertex_ids[2]];
 
-        vector<vector<int>> grid(N + 1, vector<int>(N + 1, -1));
+        Eigen::MatrixXi grid(N + 1, N + 1);
+        grid.setConstant(-1);
 
         // Crea vertici baricentrici
         for (int i = 0; i <= N; ++i) {
@@ -439,21 +439,21 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
 
                 vertex v = {-1, x, y, z};
                 normalize(v);
-                grid[i][j] = getOrAddVertex(v.x, v.y, v.z, vertices, tolerance);
+                grid(i,j) = getOrAddVertex(v.x, v.y, v.z, vertices, tolerance);
             }
         }
 
         // Triangola la griglia baricentrica
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N - i; ++j) {
-                int v0 = grid[i][j];
-                int v1 = grid[i + 1][j];
-                int v2 = grid[i][j + 1];
+                int v0 = grid(i,j);
+                int v1 = grid(i+1,j);
+                int v2 = grid(i,j+1);
                 if (v0 >= 0 && v1 >= 0 && v2 >= 0)
                     faces.push_back({(int)faces.size(), {v0, v1, v2}, {}});
 
                 if (i + j < N - 1) {
-                    int v3 = grid[i + 1][j + 1];
+                    int v3 = grid(i+1,j+1);
                     if (v1 >= 0 && v2 >= 0 && v3 >= 0)
                         faces.push_back({(int)faces.size(), {v1, v3, v2}, {}});
                 }
@@ -489,10 +489,10 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
 }
 
 void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) {
-    if (p != 3 || b <= 0 || b != c) {
+    /*if (p != 3 || b <= 0 || b != c) {
         cerr << "Classe II supporta solo triangoli regolari con b = c > 0\n";
         return;
-    }
+    }*/
 
     int N = b;
     const double tol = 1e-4;
@@ -515,18 +515,18 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
         if (f.vertex_ids.size() != 3) continue;
 
         int a = f.vertex_ids[0];
-        int b_ = f.vertex_ids[1];
-        int c_ = f.vertex_ids[2];
+        int b = f.vertex_ids[1];
+        int c = f.vertex_ids[2];
 
         const vertex& A = baseVertices[a];
-        const vertex& B = baseVertices[b_];
-        const vertex& C = baseVertices[c_];
+        const vertex& B = baseVertices[b];
+        const vertex& C = baseVertices[c];
 
         Eigen::Vector3d va(A.x, A.y, A.z);
         Eigen::Vector3d vb(B.x, B.y, B.z);
         Eigen::Vector3d vc(C.x, C.y, C.z);
 
-        vector<vector<int>> grid(N + 1, vector<int>(N + 1, -1));
+        Eigen::MatrixXi grid = Eigen::MatrixXi::Constant(N + 1, N + 1, -1);
 
         for (int i = 0; i <= N; ++i) {
             for (int j = 0; j <= N - i; ++j) {
@@ -536,7 +536,7 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
                 P.normalize();
 
                 vector<pair<int, int>> parts = {
-                    {a, i}, {b_, j}, {c_, k}
+                    {a, i}, {b, j}, {c, k}
                 };
                 sort(parts.begin(), parts.end());
                 auto key = make_tuple(parts[0], parts[1], parts[2]);
@@ -549,20 +549,20 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
                     vertexMap[key] = vid;
                 }
 
-                grid[i][j] = vid;
+                grid(i,j) = vid;
             }
         }
 
         // Crea triangoli
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N - i; ++j) {
-                int v0 = grid[i][j];
-                int v1 = grid[i + 1][j];
-                int v2 = grid[i][j + 1];
+                int v0 = grid(i,j);
+                int v1 = grid(i+1,j);
+                int v2 = grid(i,j+1);
                 faces.push_back({nextFaceId++, {v0, v1, v2}, {}});
 
                 if (i + j < N - 1) {
-                    int v3 = grid[i + 1][j + 1];
+                    int v3 = grid(i+1,j+1);
                     faces.push_back({nextFaceId++, {v1, v3, v2}, {}});
                 }
             }
@@ -570,13 +570,13 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
     }
 
     // Costruzione spigoli unici
-    map<pair<int, int>, int> edgeMap;
+    map<pair<int, int>, int> edgeMap; //associa a una coppia ordinata di vertici(lo spigolo) una coppia ordinata di vertici
     for (auto& f : faces) {
         f.edge_ids.clear();
         for (int i = 0; i < 3; ++i) {
             int u = f.vertex_ids[i];
             int v = f.vertex_ids[(i + 1) % 3];
-            auto key = std::minmax(u, v);
+            auto key = minmax(u, v);
             if (!edgeMap.count(key)) {
                 int eid = static_cast<int>(edges.size());
                 edges.push_back({eid, key.first, key.second});
@@ -587,7 +587,6 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
     }
 
     // Assegnazione al polyhedron finale
-    poly = base;
     poly.id = 1000 + N;
     poly.vertex_ids.clear();
     for (auto& v : vertices) poly.vertex_ids.push_back(v.id);
@@ -596,7 +595,6 @@ void buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, 
     poly.face_ids.clear();
     for (auto& f : faces) poly.face_ids.push_back(f.id);
 }
-
 
 bool isFaceConsistent(const face& f, const vector<edge>& edges, double tolerance) {
     int n = f.vertex_ids.size();
@@ -721,15 +719,7 @@ vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<f
     return centroids;
 }
 
-void buildDualPolyhedron(
-    const std::vector<PolyhedronMesh::vertex>& vertices,
-    const std::vector<PolyhedronMesh::edge>& edges,
-    const std::vector<PolyhedronMesh::face>& faces,
-    const PolyhedronMesh::polyhedron& original,
-    std::vector<PolyhedronMesh::vertex>& dualVertices,
-    std::vector<PolyhedronMesh::edge>& dualEdges,
-    std::vector<PolyhedronMesh::face>& dualFaces,
-    PolyhedronMesh::polyhedron& dualPoly)
+void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& edges, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<edge>& dualEdges, vector<face>& dualFaces,polyhedron& dualPoly)
 {
     using namespace PolyhedronMesh;
 
@@ -761,19 +751,19 @@ void buildDualPolyhedron(
 
 	// 2. Ogni vertice originale diventa una faccia nel duale (facce attorno ad esso)
 	for (unsigned int i = 0; i < vertices.size(); ++i) {
-		std::vector<int> adjacentFaces;
+		vector<int> adjacentFaces;
 
 		// Trova tutte le facce che contengono il vertice i
 		for (unsigned int j = 0; j < faces.size(); ++j) {
-			if (std::find(faces[j].vertex_ids.begin(), faces[j].vertex_ids.end(), i) != faces[j].vertex_ids.end()) {
+			if (find(faces[j].vertex_ids.begin(), faces[j].vertex_ids.end(), i) != faces[j].vertex_ids.end()) {
 				adjacentFaces.push_back(j);
 			}
 		}
 
 		if (adjacentFaces.empty()) continue;
 
-		std::vector<int> orderedFaces;
-		std::set<int> visited;
+		vector<int> orderedFaces;
+		set<int> visited;
 		visited.insert(adjacentFaces[0]);
 		orderedFaces.push_back(adjacentFaces[0]);
 
@@ -818,7 +808,7 @@ void buildDualPolyhedron(
 
 
     // 3. Costruzione esplicita degli spigoli nel duale
-    std::map<std::pair<int, int>, int> edgeMap;
+    map<pair<int, int>, int> edgeMap;
     for (auto& f : dualFaces) {
         int n = f.vertex_ids.size();
         f.edge_ids.clear();
@@ -1007,13 +997,24 @@ void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& f
                         dualVertices, dualEdges, dualFaces, dualPoly);
 
     // Step 3: se b e c permettono la geodesica, calcolala sul duale
-    bool classI = (b == 0 && c > 0) || (b > 0 && c == 0);
-    bool classII = (b == c && b > 0);
+	bool classII = (b == c && b > 0);
+	bool classI  = !classII && ((b == 0 && c > 0) || (b > 0 && c == 0));
 
-    if (classI) {
-        buildClassIGeodesic(3, q, b + c, finalVertices, finalEdges, finalFaces, finalPoly);
-    } else if (classII) {
-        buildClassIIGeodesic(3, q, b, c, finalVertices, finalEdges, finalFaces, finalPoly);
+
+	if (classII) {
+		cout << ">> Classe II su duale...\n";
+		buildClassIIGeodesic(3, q, b, c, dualVertices, dualEdges, dualFaces, dualPoly);
+		finalVertices = dualVertices;
+		finalEdges    = dualEdges;
+		finalFaces    = dualFaces;
+		finalPoly     = dualPoly;
+	} else if (classI) {
+		cout << ">> Classe I su duale...\n";
+		buildClassIGeodesic(3, q, b + c, dualVertices, dualEdges, dualFaces, dualPoly);
+		finalVertices = dualVertices;
+		finalEdges    = dualEdges;
+		finalFaces    = dualFaces;
+		finalPoly     = dualPoly;
     } else if (b == 0 && c == 0) {
         finalVertices = dualVertices;
         finalEdges = dualEdges;
@@ -1027,97 +1028,3 @@ void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& f
         finalPoly = dualPoly;
     }
 }
-
-
-/*void buildDualPolyhedron(const vector<vertex>& vertices, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<face>& dualFaces, vector<edge>& dualEdges, polyhedron& dualPoly) {
-    dualVertices = calculateCentroids(vertices, faces);
-    map<int, vector<int>> vertexToFaceIds;
-
-    for (const auto& f : faces) {
-        for (int vid : f.vertex_ids) {
-            vertexToFaceIds[vid].push_back(f.id);
-        }
-    }
-
-    int newFaceId = 0;
-    dualFaces.clear();
-    dualFaces.reserve(vertices.size());
-
-    for (const auto& v : vertices) {
-        if (!vertexToFaceIds.count(v.id)) {
-            cerr << "❗Vertice " << v.id << " non è presente in nessuna faccia!\n";
-        }
-    }
-
-	for (const auto& [vId, adjacentFaceIds] : vertexToFaceIds) {
-		const vertex& center = vertices[vId];
-		Eigen::Vector3d vc(center.x, center.y, center.z);
-		vc.normalize();
-
-		// Definisce base ortonormale nel piano tangente a vc
-		Eigen::Vector3d ref1;
-		if (std::abs(vc.x()) < 1e-6 && std::abs(vc.y()) < 1e-6)
-			ref1 = Eigen::Vector3d(0, 1, 0);
-		else
-			ref1 = Eigen::Vector3d(-vc.y(), vc.x(), 0).normalized();
-
-		Eigen::Vector3d ref2 = vc.cross(ref1);
-
-		vector<pair<double, int>> ordered;
-		for (int fid : adjacentFaceIds) {
-			const vertex& fcenter = dualVertices[fid];
-			Eigen::Vector3d fc(fcenter.x, fcenter.y, fcenter.z);
-			Eigen::Vector3d dir = (fc - vc).normalized();
-
-			double x = dir.dot(ref1);
-			double y = dir.dot(ref2);
-			double angle = atan2(y, x);
-			ordered.emplace_back(angle, fid);
-		}
-
-		sort(ordered.begin(), ordered.end());
-
-		face newFace(newFaceId++);
-		for (const auto& [angle, fid] : ordered)
-			newFace.vertex_ids.push_back(fid);
-
-		dualFaces.push_back(newFace);
-	}
-
-    //Costruzione esplicita degli spigoli
-    map<pair<int, int>, int> edgeMap;
-    dualEdges.clear();
-
-    for (auto& f : dualFaces) {
-        int n = f.vertex_ids.size();
-        f.edge_ids.clear();
-        for (int i = 0; i < n; ++i) {
-            int a = f.vertex_ids[i];
-            int b = f.vertex_ids[(i + 1) % n];
-            auto key = std::minmax(a, b);
-
-            if (!edgeMap.count(key)) {
-                int eid = static_cast<int>(dualEdges.size());
-                edgeMap[key] = eid;
-                dualEdges.push_back({eid, key.first, key.second});
-            }
-            f.edge_ids.push_back(edgeMap[key]);
-        }
-    }
-
-    dualPoly.id = original.id + 1000;
-    dualPoly.vertex_ids.clear();
-    dualPoly.edge_ids.clear();
-    dualPoly.face_ids.clear();
-
-    for (const auto& v : dualVertices)
-        dualPoly.vertex_ids.push_back(v.id);
-    for (const auto& e : dualEdges)
-        dualPoly.edge_ids.push_back(e.id);
-    for (const auto& f : dualFaces)
-        dualPoly.face_ids.push_back(f.id);
-
-    dualPoly.num_vertices = dualVertices.size();
-    dualPoly.num_faces = dualFaces.size();
-    dualPoly.num_edges = dualEdges.size();
-}*/
