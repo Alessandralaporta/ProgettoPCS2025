@@ -396,22 +396,10 @@ void buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<e
 
     buildPolyhedron(p, q, 0, 0, baseVertices, baseEdges, baseFaces, basePoly);
 
-    vector<face> triangleFaces;
-    int faceId = 0;
-    for (const auto& f : baseFaces) {
-        if (f.vertex_ids.size() == 3) {
-            triangleFaces.push_back({faceId++, f.vertex_ids, {}});
-        } else {
-            for (size_t i = 1; i < f.vertex_ids.size() - 1; ++i) { // prende il primo vertice fisso e crea triangoli con le coppie successive di vertici, alla fine ottieni solo facce triangolari, tutte pronte per la suddivisione.
-                triangleFaces.push_back({faceId++, {f.vertex_ids[0], f.vertex_ids[i], f.vertex_ids[i + 1]}, {}});
-            }
-        }
-    }
-
     const int N = b;
     const double tolerance = 1e-6;
 
-    for (const auto& f : triangleFaces) {
+    for (const auto& f : baseFaces) {
         vertex A = baseVertices[f.vertex_ids[0]];
         vertex B = baseVertices[f.vertex_ids[1]];
         vertex C = baseVertices[f.vertex_ids[2]];
@@ -746,10 +734,7 @@ vector<vertex> calculateCentroids(const vector<vertex>& vertices, const vector<f
     return centroids;
 }
 
-void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& edges, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<edge>& dualEdges, vector<face>& dualFaces,polyhedron& dualPoly)
-{
-    using namespace PolyhedronMesh;
-
+void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& edges, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<edge>& dualEdges, vector<face>& dualFaces,polyhedron& dualPoly) {
     dualVertices.clear();
     dualEdges.clear();
     dualFaces.clear();
