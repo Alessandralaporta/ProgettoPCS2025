@@ -13,7 +13,7 @@ int main() {
     vector<face> faces;
     polyhedron poly;
 
-    int p = 3, q = 5, b = 2, c = 2;
+    int p = 3, q = 4, b = 2, c = 2;
 	//buildPolyhedron(p,q,b,c,vertices,edges,faces,poly);
 	buildDualFromBaseThenGeodesic(p,q,b,c,vertices,edges,faces,poly);
 

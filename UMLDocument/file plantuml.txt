@@ -1,0 +1,216 @@
+//slide 2: panoramica cartelle e file
+@startuml
+package "Solidi Platonici" {
+
+package "src" {
+  rectangle "utils.cpp"
+  rectangle "utils.hpp"
+  rectangle "PolyhedronMesh.hpp"
+}
+
+package "src_test" {
+  rectangle "test_utils.hpp"
+  rectangle "test_polyhedron.hpp"
+}
+
+package "ExportParaview" {
+  rectangle "UCDUtilities.cpp"
+  rectangle "UCDUtilities.hpp"
+}
+
+rectangle "main.cpp"
+rectangle "main_test.cpp"
+
+}
+@enduml
+
+
+//slide 3: PolyhedronMesh.hpp
+@startuml
+
+package "PolyhedronMesh" {
+
+  struct vertex {
+    - int id
+    - double x
+    - double y
+    - double z
+    - int ShortPath
+
+    + length(): double
+    + normalized(): vertex    
+  }
+
+  struct edge {
+    - int id
+    - int origin
+    - int end
+    - double length
+    - int ShortPath
+  }
+
+  struct face {
+    - int id
+    - vector<int> vertex_ids
+    - vector<int> edge_ids
+  }
+
+  struct polyhedron {
+    - int id
+    - int num_vertices
+    - int num_edges
+    - int num_faces
+    - vector<int> vertex_ids
+    - vector<int> edge_ids
+    - vector<int> face_ids
+
+  }
+
+}
+
+@enduml
+
+
+//slide 4: utils.cpp
+@startuml
+
+
+class "utils" {
+  normalize(vertex& v) : void
+  buildTetrahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) : void
+  buildEsahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) : void
+  buildOctahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) : void
+  buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) : void
+  buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) : void
+  buildPolyhedron(int p, int q, int b, int c, vector<vertex> &vertices, vector<edge> &edges, vector<face> &faces, polyhedron &polyhedron) : void
+  distance(const vertex& a, const vertex& b) : double
+  sameVertex(const vertex& a, const vertex& b, double tolerance) : bool
+  getOrAddVertex(double x, double y, double z, std::vector<vertex>& vertices, double tolerance) : int
+  getOrAddVertex(double x, double y, double z, vector<vertex>& vertices) : int
+  projectVerticesOnUnitSphere(vector<vertex>&vertices) : void
+  buildClassIGeodesic(int p, int q, int b, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) : void
+  buildClassIIGeodesic(int p, int q, int b, int c, vector<vertex>& vertices, vector<edge>& edges, vector<face>& faces, polyhedron& poly) : void
+  isFaceConsistent(const face& f, const vector<edge>& edges, double tolerance) : bool
+  findShortestPath(vector<vertex>& vertices, vector<edge>& edges, int startId, int endId) : void
+  calculateCentroids(const vector<vertex>& vertices, const vector<face>& faces) : vector<vertex>
+  buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& edges, const vector<face>& faces, const polyhedron& original, vector<vertex>& dualVertices, vector<edge>& dualEdges, vector<face>& dualFaces,polyhedron& dualPoly) : void
+  exportCell0Ds (const vector<vertex>& vertices, const string& filename) : void
+  exportCell1Ds (const vector<edge>& edges, const string& filename) : void
+  exportCell2Ds (const vector<face>& faces, const string& filename) : void
+  exportCell3Ds(const vector<polyhedron>& polyhedra, const string& filename) : void
+  exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges, const string& outputDirectory) : void
+}
+  buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& finalVertices, vector<edge>& finalEdges, vector<face>& finalFaces, polyhedron& finalPoly) : void
+
+@enduml
+
+//slide 6:test_polyhedron.hpp
+@startuml
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 15
+
+package "TEST" {
+    [PolyhedronTest]
+    [GeodesicPolyhedronTest]
+    [DualPolyhedronTest]
+    [ShortestPathTest]
+}
+
+package "Geometry" {
+    [PolyhedronMesh.hpp]
+    [Utils.hpp]
+    [checkPolyhedronStructure()]
+}
+
+package "Builders" {
+    [buildTetrahedron()]
+    [buildEsahedron()]
+    [buildOctahedron()]
+    [buildDodecahedron()]
+    [buildIcosahedron()]
+    [buildClassIGeodesic()]
+    [buildClassIIGeodesic()]
+    [buildDualPolyhedron()]
+    [findShortestPath()]
+}
+
+' PolyhedronTest connects to regular solids
+[PolyhedronTest] --> [buildTetrahedron()]
+[PolyhedronTest] --> [buildEsahedron()]
+[PolyhedronTest] --> [buildOctahedron()]
+[PolyhedronTest] --> [buildDodecahedron()]
+[PolyhedronTest] --> [buildIcosahedron()]
+[PolyhedronTest] --> [checkPolyhedronStructure()]
+
+' Geodesic
+[GeodesicPolyhedronTest] --> [buildClassIGeodesic()]
+[GeodesicPolyhedronTest] --> [buildClassIIGeodesic()]
+
+' Duals
+[DualPolyhedronTest] --> [buildTetrahedron()]
+[DualPolyhedronTest] --> [buildOctahedron()]
+[DualPolyhedronTest] --> [buildIcosahedron()]
+[DualPolyhedronTest] --> [buildDualPolyhedron()]
+
+' Shortest paths
+[ShortestPathTest] --> [buildTetrahedron()]
+[ShortestPathTest] --> [buildEsahedron()]
+[ShortestPathTest] --> [buildOctahedron()]
+[ShortestPathTest] --> [buildDodecahedron()]
+[ShortestPathTest] --> [buildIcosahedron()]
+[ShortestPathTest] --> [findShortestPath()]
+
+' Dependencies
+[checkPolyhedronStructure()] --> [Utils.hpp]
+[checkPolyhedronStructure()] --> [PolyhedronMesh.hpp]
+[buildTetrahedron()] --> [PolyhedronMesh.hpp]
+[buildDualPolyhedron()] --> [PolyhedronMesh.hpp]
+[findShortestPath()] --> [PolyhedronMesh.hpp]
+@enduml
+
+//slide 7: test_utils.hpp
+@startuml
+' Title
+
+' Vertex class
+class vertex {
+    +int id
+    +double x
+    +double y
+    +double z
+}
+
+' Edge class
+class edge {
+    +int id
+    +int origin
+    +int end
+}
+
+' Face class
+class face {
+    +int id
+    +vector<int> vertex_ids
+    +vector<int> edge_ids
+}
+
+' Utils functions (static or free functions)
+class Utils {
+    +void normalize(vertex &v)
+    +double distance(vertex a, vertex b)
+    +int getOrAddVertex(double x, double y, double z, vector<vertex> &verts)
+    +void projectVerticesOnUnitSphere(vector<vertex> &verts)
+    +bool sameVertex(vertex a, vertex b, double tolerance)
+    +bool isFaceConsistent(face f, vector<edge> &edges, double tolerance)
+}
+
+' Relations
+vertex --> Utils : used in
+edge --> face : referenced by edge_ids
+vertex --> face : referenced by vertex_ids
+Utils ..> edge : uses edge
+Utils ..> face : uses face
+Utils ..> vertex : uses vertex
+
+@enduml
