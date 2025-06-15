@@ -169,7 +169,7 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
     edges.clear();
     faces.clear();
 
-    const double phi = (1.0 + std::sqrt(5.0)) / 2.0;
+    const double phi = (1.0 + sqrt(5.0)) / 2.0;
     const double a = 1.0;
     const double b = 1.0 / phi;
     const double c = phi;
@@ -183,7 +183,7 @@ void buildDodecahedron(vector<vertex> &vertices, vector<edge> &edges, vector<fac
     };
 
     for (size_t i = 0; i < raw.size(); ++i) {
-        raw[i].normalize();  // Proiezione sulla sfera unitaria
+        raw[i].normalize();  
         vertices.push_back({(int)i, raw[i][0], raw[i][1], raw[i][2]});
     }
 
@@ -280,7 +280,7 @@ void buildIcosahedron(vector<vertex> &vertices, vector<edge> &edges, vector<face
                 edges.push_back({static_cast<int>(edges.size()), key.first, key.second});
             }
             for (const auto& e : edges) {
-                if (std::minmax(e.origin, e.end) == key) {
+                if (minmax(e.origin, e.end) == key) {
                     f.edge_ids.push_back(e.id);
                     break;
                 }
