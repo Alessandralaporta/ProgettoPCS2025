@@ -810,7 +810,7 @@ void buildDualPolyhedron(const vector<vertex>& vertices,  const vector<edge>& ed
         for (int i = 0; i < n; ++i) {
             int a = f.vertex_ids[i];
             int b = f.vertex_ids[(i + 1) % n];
-            auto key = std::minmax(a, b);
+            auto key = minmax(a, b);
             if (!edgeMap.count(key)) {
                 int eid = static_cast<int>(dualEdges.size());
                 edgeMap[key] = eid;
