@@ -986,6 +986,11 @@ void exportToParaview(const vector<vertex>& vertices, const vector<edge>& edges,
 }
 
 void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& finalVertices, vector<edge>& finalEdges, vector<face>& finalFaces, polyhedron& finalPoly) {
+	if ((b == 0 || c == 0) && (b + c) > 0 && q != 3) {
+		cerr << "Errore.\n";
+		return;
+	}
+
 	if (p == 3 && q == 3 && b == 0 && c == 0) {
         buildPolyhedron(p, q, b, c, finalVertices, finalEdges, finalFaces, finalPoly);
         return;
@@ -1007,13 +1012,13 @@ void buildDualFromBaseThenGeodesic(int p, int q, int b, int c, vector<vertex>& f
 
 
 	if (classII) {
-		buildClassIIGeodesic(3, q, b, c, dualVertices, dualEdges, dualFaces, dualPoly);
+		buildClassIIGeodesic(3, p, b, c, dualVertices, dualEdges, dualFaces, dualPoly);
 		finalVertices = dualVertices;
 		finalEdges    = dualEdges;
 		finalFaces    = dualFaces;
 		finalPoly     = dualPoly;
 	} else if (classI) {
-		buildClassIGeodesic(3, q, b + c, dualVertices, dualEdges, dualFaces, dualPoly);
+		buildClassIGeodesic(3, p, b + c, dualVertices, dualEdges, dualFaces, dualPoly);
 		finalVertices = dualVertices;
 		finalEdges    = dualEdges;
 		finalFaces    = dualFaces;
